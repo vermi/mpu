@@ -13,13 +13,14 @@ import re
 import irclib
 import dirty_secrets
 
-
 ## Beginning Setup
 # Connection information
-network = 'irc.freenode.net'
-port = 6667
+network = dirty_secrets.network
+port = dirty_secrets.port
 password = dirty_secrets.password
-name = '/msg MPU MPU-help'
+channel = dirty_secrets.channel
+nick = dirty_secrets.nick
+name = dirty_secrets.name
 
 gagged = False
 
@@ -37,7 +38,7 @@ def help(command=None):
 	global users
 	global nick
 
-	if command=='mpu-help':
+	if command=='help':
 		say("If called by itself, MPU-help will list all available commands. Followed by another command, MPU-help will give more information on that command.")
 		return True
 	elif command=='wthru':
@@ -82,7 +83,7 @@ def help(command=None):
 		say("Usage: mpu-usermod [list] [user1 [user2 user3...]]")
 	else:
 		say("Available commands: " + (' '.join(sorted(handleFlags.keys()))))
-		say("Type 'MPU-help [command]' to get more info about command.")
+		say("Type 'help [command]' to get more info about command.")
 		say("I also respond to PMs; just remember you don't need ! in front of the command.")
 		return True
 
@@ -152,7 +153,7 @@ def info(command):
 	split = command.split()
 
 	if (len(split)==0):
-		handleFlags['mpu-help'](None, 'info')
+		handleFlags['help'](None, 'info')
 		return True
 
 	user = split[0]
@@ -299,7 +300,7 @@ def usermod(userFrom, command):
 
 ## Handle Input
 handleFlags = {
-	'mpu-help':     lambda userFrom, command: help(command),
+	'help':         lambda userFrom, command: help(command),
 	'wthru':        lambda userFrom, command: wthru(),
 	'motivation':   lambda userFrom, command: motivation(),
 	'mpu-source':   lambda userFrom, command: source(),
@@ -308,9 +309,9 @@ handleFlags = {
 	'mpu-gag':      lambda userFrom, command: gag(),
 	'mpu-ungag':    lambda userFrom, command: ungag(),
 	'info':         lambda userFrom, command: info(command),
-	'infoset':	lambda userFrom, command: infoset(userFrom, command),
+	'infoset':	    lambda userFrom, command: infoset(userFrom, command),
 	'mpu-changelog':lambda userFrom, command: changelog(command),
-	'whatis':	lambda userFrom, command: whatis(userFrom, command),
+	'whatis':	    lambda userFrom, command: whatis(userFrom, command),
 	'mpu-usermod':	lambda userFrom, command: usermod(userFrom, command),
 }
 
@@ -336,7 +337,7 @@ def handlePrivateMessage(connection, event):
 		handleFlags[flag.lower()](userFrom, ' '.join(command))
 		channel = temp
 	except KeyError:
-		handleFlags['mpu-help'](userFrom, '')
+		handleFlags['help'](userFrom, '')
 		channel = temp
 	return True
 
@@ -361,32 +362,27 @@ def handlePublicMessage(connection, event):
 		except KeyError:
 			return True
 
+# Handle NickServ successes so that we can join +r channels
+def handleMode(connection, event):
+	if event.target() == nick and '+r' in event.arguments():
+		print "NickServ authentication success!"
+		server.join(channel)
 
 ## Final Setup
 # Add handlers
 irc.add_global_handler('privmsg', handlePrivateMessage)
 irc.add_global_handler('pubmsg', handlePublicMessage)
+irc.add_global_handler('umode', handleMode)
 
 # Jump into an infinite loop
 while(True):
 	try:
 		# dictionary to group information about files we need
 		files = {}
-
-		# change some settings based on whether we're running the testing version or not
-		if(sys.argv[0].find('testing')!=-1):
-			files['userData'] = 'userData_testing.pickle'
-			files['jeeves'] = 'jeeves_testing.pickle'
-			files['users'] = 'users_testing.pickle'
-			channel = '#mputesting'
-			nick = 'MPU-testing'
-			irclib.DEBUG = True
-		else:
-			files['userData'] = 'userData.pickle'
-			files['jeeves'] = 'jeeves.pickle'
-			files['users'] = 'users.pickle'
-			channel = '#cplug'
-			nick = 'MPU'
+		irclib.DEBUG = dirty_secrets.debug
+		files['userData'] = 'userData.pickle'
+		files['jeeves'] = 'jeeves.pickle'
+		files['users'] = 'users.pickle'
 
 		# load the pickled files
 		for key, file in files.items():
@@ -398,14 +394,13 @@ while(True):
 				vars()[key] = {}
 
 		# add some defaults for users
-		users['owner'] = 'xiong_chiamiov'
+		users['owner'] = dirty_secrets.owner
 		if not 'cabal' in users.keys():
 			users['cabal'] = []
 
 		# Create a server object, connect and join the channel
 		server = irc.server()
 		server.connect(network, port, nick, password=password, ircname=name)
-		server.join(channel)
 
 		irc.process_forever(timeout=10.0)
 	except irclib.ServerNotConnectedError:
