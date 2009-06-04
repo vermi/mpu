@@ -23,6 +23,7 @@ nick = dirty_secrets.nick
 name = dirty_secrets.name
 
 gagged = False
+lastmessage = { }
 
 # Create an IRC object
 irc = irclib.IRC()
@@ -39,28 +40,22 @@ def help(command=None):
 	global nick
 
 	if command=='help':
-		say("If called by itself, MPU-help will list all available commands. Followed by another command, MPU-help will give more information on that command.")
+		say("If called by itself, will list all available commands. Followed by another command, will give more information on that command.")
 		return True
-	elif command=='wthru':
-		say('Returns a response to the question, "Who the hell are you?".')
-		return True
-	elif command=='motivation':
-		say("Gives a motivating quote from Kamina (Gurren Lagann).")
-		return True
-	elif command=='mpu-source':
+	elif command=='source':
 		say("Gives the address of the Git repository of MPU's code.")
 		return True
-	elif command=='mpu-report':
+	elif command=='report':
 		say("Will send whatever follows to "+users['owner']+" in a PM, or log it if he's offline.")
 		return True
-	elif command=='mpu-kill':
-		say("Disconnects MPU from "+network+".")
+	elif command=='kill':
+		say("Disconnects from "+network+".")
 		return True
-	elif command=='mpu-gag':
-		say("Prevents MPU from speaking until ungagged.")
+	elif command=='gag':
+		say("Prevents the bot from speaking until ungagged.")
 		return True
-	elif command=='mpu-ungag':
-		say("Allows MPU to speak again after being gagged.")
+	elif command=='ungag':
+		say("Allows the bot to speak again after being gagged.")
 		return True
 	elif command=='info':
 		say("Gets information on a user.")
@@ -70,43 +65,25 @@ def help(command=None):
 		say("Sets information about you.")
 		say("Usage: infoset [info] [details]")
 		return True
-	elif command=='mpu-changelog':
+	elif command=='changelog':
 		say("Tells what's been changed recently.  If given an argument, get all changes since then.")
-		say('Example: mpu-changelog 2weeks, mpu-changelog "12 march"')
+		say('Example: changelog 2weeks, changelog "12 march"')
 		return True
 	elif command=='whatis':
 		say("Let's you know what everyone's talking about.  Best used via pm.")
 		say("Example: whatis foo, whatis set foo a common metasyntatic variable")
 		return True
-	elif command=='mpu-usermod':
+	elif command=='usermod':
 		say("Changes the status of a user, as viewed by "+nick)
-		say("Usage: mpu-usermod [list] [user1 [user2 user3...]]")
+		say("Usage: usermod [list] [user1 [user2 user3...]]")
 	else:
 		say("Available commands: " + (' '.join(sorted(handleFlags.keys()))))
 		say("Type 'help [command]' to get more info about command.")
 		say("I also respond to PMs; just remember you don't need ! in front of the command.")
 		return True
 
-def wthru():
-	global users
-
-	say("MPU is owned by "+users['owner']+" and responds to PMs just as well as channel flags (save the spam!)")
-	say("ED: Who are you? Eh? What? What did you just say?")
-	say("SATELLITE: Who, you? Here, always.")
-	say("ED: Edward. A net diver from Earth.")
-	say("SATELLITE: Earth?")
-	say("ED: Yup, Hey, what's your name?")
-	say("SATELLITE: I am the satellite control program on the D-135 artificial satellite.")
-	say("ED: What's that? Don't you have a nickname? Then Ed will give you one. I know! Because you're a computer, you can be MPU! MPU! Cool name!")
-	say("MPU: Um...")
-
-	return True
-
-def motivation():
-	return say("Don't believe in yourself. Believe in me. Believe in me, who believes in you!")
-
 def source():
-	return say("You can view my source at http://github.com/xiongchiamiov/mpu/ .")
+	return say("You can view my source at http://github.com/raylu/mpu/ or the original at http://github.com/xiongchiamiov/mpu/")
 
 def report(userFrom, message):
 	global users
@@ -130,7 +107,6 @@ def kill(userFrom):
 	global users
 
 	if userFrom == users['owner']:
-		server.privmsg(users['owner'], "I've been killed!")
 		logFile = open('MPU.log', 'a')
 		logFile.write(strftime("%Y-%m-%d %H:%M:%S")+" -- "+"Got killed!\n")
 		server.disconnect()
@@ -214,7 +190,7 @@ def changelog(command):
 	else:
 		output = commands.getstatusoutput('git --no-pager log --pretty=format:%s -1')
 	if output[0] or (command and not re.match('^[\w\d "]+$', command)):
-		help('mpu-changelog')
+		help('changelog')
 		return False
 	else:
 		for summary in output[1].split('\n'):
@@ -297,22 +273,31 @@ def usermod(userFrom, command):
 		say("I'm sorry, but I don't trust you.  Y'know, the darting eyes and all.")
 		return False
 
+def fortune(userFrom, command):
+	output = commands.getstatusoutput('fortune -sa')
+	for summary in output[1].split('\n'):
+		say(summary.replace('\t', '  '))
+
+def limerick(userFrom, command):
+	output = commands.getstatusoutput('fortune /usr/share/games/fortunes/off/limerick')
+	for summary in output[1].split('\n'):
+		say(summary.replace('\t', '  '))
 
 ## Handle Input
 handleFlags = {
-	'help':         lambda userFrom, command: help(command),
-	'wthru':        lambda userFrom, command: wthru(),
-	'motivation':   lambda userFrom, command: motivation(),
-	'mpu-source':   lambda userFrom, command: source(),
-	'mpu-report':   lambda userFrom, command: report(userFrom, command),
-	'mpu-kill':     lambda userFrom, command: kill(userFrom),
-	'mpu-gag':      lambda userFrom, command: gag(),
-	'mpu-ungag':    lambda userFrom, command: ungag(),
-	'info':         lambda userFrom, command: info(command),
-	'infoset':	    lambda userFrom, command: infoset(userFrom, command),
-	'mpu-changelog':lambda userFrom, command: changelog(command),
-	'whatis':	    lambda userFrom, command: whatis(userFrom, command),
-	'mpu-usermod':	lambda userFrom, command: usermod(userFrom, command),
+	'help':      lambda userFrom, command: help(command),
+	'source':    lambda userFrom, command: source(),
+	'report':    lambda userFrom, command: report(userFrom, command),
+	'kill':      lambda userFrom, command: kill(userFrom),
+	'gag':       lambda userFrom, command: gag(),
+	'ungag':     lambda userFrom, command: ungag(),
+	'info':      lambda userFrom, command: info(command),
+	'infoset':	 lambda userFrom, command: infoset(userFrom, command),
+	'changelog': lambda userFrom, command: changelog(command),
+	'whatis':	 lambda userFrom, command: whatis(userFrom, command),
+	'usermod':	 lambda userFrom, command: usermod(userFrom, command),
+	'fortune':	 lambda userFrom, command: fortune(userFrom, command),
+	'limerick':	 lambda userFrom, command: limerick(userFrom, command),
 }
 
 # Treat PMs like public flags, except output is sent back in a PM to the user
@@ -345,22 +330,37 @@ def handlePrivateMessage(connection, event):
 def handlePublicMessage(connection, event):
 	# get the user the message came from
 	userFrom = event.source().split('!')[0]
+
 	# separate message into flag and rest
+	message = event.arguments()[0]
 	try:
-		splitMessage = event.arguments()[0].split()
+		splitMessage = message.split()
 		flag = splitMessage[0]
 		command = splitMessage[1:]
 	except:
-		flag = event.arguments()[0]
+		flag = message
 		command = []
+	
 
-	if(flag[0]!='!'):
-		return False
-	else:
+	if (flag[0:2] == 's/'):
+		splitMessage = message.split('/')
+		if (len(splitMessage) == 4):
+			frUser = splitMessage[3].strip()
+			if (frUser == ''):
+				frUser = userFrom
+			try:
+				say(frUser + '> ' + lastmessage[frUser].replace(splitMessage[1], splitMessage[2]))
+			except:
+				say(userFrom + ': No messages found from ' + frUser)
+		else:
+			say(userFrom + ': s/find/replace/[username]')
+	elif (flag[0] == '!'):
 		try:
 			return handleFlags[flag[1:].lower()](userFrom, ' '.join(command))
 		except KeyError:
 			return True
+
+	lastmessage[userFrom] = message
 
 # Handle NickServ successes so that we can join +r channels
 def handleMode(connection, event):
