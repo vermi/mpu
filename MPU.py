@@ -12,6 +12,7 @@ import commands
 import re
 import irclib
 import dirty_secrets
+import random
 
 ## Beginning Setup
 # Connection information
@@ -33,6 +34,10 @@ irc = irclib.IRC()
 def say(message):
 	if(not gagged):
 		server.privmsg(channel, message)
+		sleep(1)
+def action(message):
+	if(not gagged):
+		server.action(channel, message)
 		sleep(1)
 
 def help(command=None):
@@ -283,6 +288,14 @@ def limerick(userFrom, command):
 	for summary in output[1].split('\n'):
 		say(summary.replace('\t', '  '))
 
+def stuff(userFrom, command):
+	imoutos = random.randint(0, 10)
+	if (imoutos == 1):
+		imoutos = 'a imouto.'
+	else:
+		imoutos = str(imoutos) + ' imoutos.'
+	action('gives ' + userFrom + ' ' + imoutos)
+
 ## Handle Input
 handleFlags = {
 	'help':      lambda userFrom, command: help(command),
@@ -298,6 +311,7 @@ handleFlags = {
 	'usermod':	 lambda userFrom, command: usermod(userFrom, command),
 	'fortune':	 lambda userFrom, command: fortune(userFrom, command),
 	'limerick':	 lambda userFrom, command: limerick(userFrom, command),
+	'stuff':	 lambda userFrom, command: stuff(userFrom, command),
 }
 
 # Treat PMs like public flags, except output is sent back in a PM to the user
