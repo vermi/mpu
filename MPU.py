@@ -13,6 +13,7 @@ import re
 import irclib
 import dirty_secrets
 import random
+import urllib2
 
 ## Beginning Setup
 # Connection information
@@ -284,7 +285,7 @@ def fortune(userFrom, command):
 		say(summary.replace('\t', '  '))
 
 def limerick(userFrom, command):
-	output = commands.getstatusoutput('fortune /usr/share/games/fortunes/off/limerick')
+	output = commands.getstatusoutput('fortune /usr/share/fortune/off/limerick')
 	for summary in output[1].split('\n'):
 		say(summary.replace('\t', '  '))
 
@@ -295,6 +296,50 @@ def stuff(userFrom, command):
 	else:
 		imoutos = str(imoutos) + ' imoutos.'
 	action('gives ' + userFrom + ' ' + imoutos)
+
+def ratio(userFrom, command):
+	user = userFrom
+	if len(command) > 0:
+		user = command
+	try:
+		req = urllib2.Request('http://www.bakabt.com/users.php?search=' + user)
+		req.add_header('Cookie', 'uid=498909;pass=01625f5744266125386aea6b77118f8b')
+		html = urllib2.urlopen(req).read()
+		start = html.find('href="user/') + 6
+		end = html.find('">', start)
+		req = urllib2.Request('http://www.bakabt.com/' + html[start:end])
+		html = urllib2.urlopen(req).read()
+
+		start = html.find('Uploaded')
+		start = html.find('">', start+8) + 2
+		end = html.find(' - ', start+2)
+		uploaded = html[start:end]
+
+		start = html.find('Downloaded')
+		start = html.find('">', start+10) + 2
+		end = html.find(' - ', start+2)
+		downloaded = html[start:end]
+
+		start = html.find('Share ratio')
+		start = html.find('">', start+11) + 2
+		end = html.find('</span>', start+2)
+		ratio = html[start:end]
+
+		if ratio == "Inf.":
+			color = "13"
+		elif ratio == "---":
+			color = "05"
+		else:
+			fratio = float(ratio)
+			if fratio < 0.5:
+				color = "04"
+			elif fratio < 2:
+				color = "07"
+			else:
+				color = "11"
+		say(user + "'s ratio is \003" + color + ratio + "\003 (" + uploaded + "/" + downloaded+ ")")
+	except:
+		say(userFrom + ': search for "'+user+'" failed')
 
 ## Handle Input
 handleFlags = {
@@ -311,7 +356,8 @@ handleFlags = {
 	'usermod':	 lambda userFrom, command: usermod(userFrom, command),
 	'fortune':	 lambda userFrom, command: fortune(userFrom, command),
 	'limerick':	 lambda userFrom, command: limerick(userFrom, command),
-	'stuff':	 lambda userFrom, command: stuff(userFrom, command),
+#	'stuff':	 lambda userFrom, command: stuff(userFrom, command),
+	'ratio':	 lambda userFrom, command: ratio(userFrom, command),
 }
 
 # Treat PMs like public flags, except output is sent back in a PM to the user
@@ -416,6 +462,7 @@ while(True):
 		server = irc.server()
 		server.connect(network, port, nick, password=password, ircname=name)
 
+		server.privmsg('NickServ', 'IDENTIFY ' + password)
 		irc.process_forever(timeout=10.0)
 	except irclib.ServerNotConnectedError:
 		sleep(5)

@@ -1,9 +1,9 @@
-network = 'irc.deltaanime.net'
+network = 'irc.rizon.net'
 port = 6667
 nick = ''
 name = ''
-password = '' #NickServ
-channel = '#boxtorrents'
+password = ''
+channel = '#bakabt'
 
 debug = False
 owner = ''
