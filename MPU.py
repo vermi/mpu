@@ -14,6 +14,7 @@ import irclib
 import dirty_secrets
 import random
 import urllib2
+import re
 
 ## Beginning Setup
 # Connection information
@@ -23,6 +24,7 @@ password = dirty_secrets.password
 channel = dirty_secrets.channel
 nick = dirty_secrets.nick
 name = dirty_secrets.name
+trigger = '!'
 
 gagged = False
 lastmessage = { }
@@ -290,12 +292,13 @@ def limerick(userFrom, command):
 		say(summary.replace('\t', '  '))
 
 def stuff(userFrom, command):
-	imoutos = random.randint(0, 10)
-	if (imoutos == 1):
-		imoutos = 'a imouto.'
-	else:
-		imoutos = str(imoutos) + ' imoutos.'
-	action('gives ' + userFrom + ' ' + imoutos)
+	if userFrom not in lastmessage or lastmessage[userFrom].count(trigger + 'stuff') == 1:
+		imoutos = random.randint(0, 10)
+		if (imoutos == 1):
+			imoutos = 'a imouto.'
+		else:
+			imoutos = str(imoutos) + ' imoutos.'
+		action('gives ' + userFrom + ' ' + imoutos)
 
 def ratio(userFrom, command):
 	user = userFrom
@@ -356,7 +359,7 @@ handleFlags = {
 	'usermod':	 lambda userFrom, command: usermod(userFrom, command),
 	'fortune':	 lambda userFrom, command: fortune(userFrom, command),
 	'limerick':	 lambda userFrom, command: limerick(userFrom, command),
-#	'stuff':	 lambda userFrom, command: stuff(userFrom, command),
+	'stuff':	 lambda userFrom, command: stuff(userFrom, command),
 	'ratio':	 lambda userFrom, command: ratio(userFrom, command),
 }
 
@@ -401,7 +404,7 @@ def handlePublicMessage(connection, event):
 		flag = message
 		command = []
 	
-
+	# s/find/replace/
 	if (flag[0:2] == 's/'):
 		splitMessage = message.split('/')
 		if (len(splitMessage) == 4):
@@ -409,18 +412,30 @@ def handlePublicMessage(connection, event):
 			if (frUser == ''):
 				frUser = userFrom
 			try:
-				say(frUser + '> ' + lastmessage[frUser].replace(splitMessage[1], splitMessage[2]))
+				for s in lastmessage[frUser]:
+					new_string, n = re.subn(splitMessage[1], splitMessage[2], s)
+					if n > 0:
+						say(frUser + '> ' + new_string)
+					break
 			except:
 				say(userFrom + ': No messages found from ' + frUser)
 		else:
-			say(userFrom + ': s/find/replace/[username]')
-	elif (flag[0] == '!'):
+			say(userFrom + ': s/find/replace/[ username]')
+
+	# track lastmessage
+	if userFrom in lastmessage:
+		if len(lastmessage[userFrom]) > 4:
+			lastmessage[userFrom].pop()
+		lastmessage[userFrom].insert(0, message)
+	else:
+		lastmessage[userFrom] = [message]
+
+	#handle commands
+	if (flag[0] == trigger):
 		try:
 			return handleFlags[flag[1:].lower()](userFrom, ' '.join(command))
 		except KeyError:
 			return True
-
-	lastmessage[userFrom] = message
 
 # Handle NickServ successes so that we can join +r channels
 def handleMode(connection, event):
