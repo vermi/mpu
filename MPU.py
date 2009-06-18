@@ -15,6 +15,7 @@ import dirty_secrets
 import random
 import urllib2
 import re
+from datetime import datetime, time, timedelta
 
 ## Beginning Setup
 # Connection information
@@ -28,6 +29,7 @@ trigger = '!'
 
 gagged = False
 lastmessage = { }
+lastaction = { }
 
 # Create an IRC object
 irc = irclib.IRC()
@@ -340,9 +342,39 @@ def ratio(userFrom, command):
 				color = "07"
 			else:
 				color = "11"
-		say(user + "'s ratio is \003" + color + ratio + "\003 (" + uploaded + "/" + downloaded+ ")")
+		server.notice(userFrom, user + "'s ratio is \003" + color + ratio + "\003 (" + uploaded + "/" + downloaded+ ")")
 	except:
-		say(userFrom + ': search for "'+user+'" failed')
+		server.notice(userFrom, 'Search for "'+user+'" failed')
+
+def idle(userFrom, command):
+	if len(command) == 0:
+		say('Usage: ' + trigger + 'idle username')
+		return False
+
+	user = command.strip()
+	try:
+		delta = datetime.utcnow() - lastaction[user]
+		hours = 0
+		minutes = 0
+		seconds = delta.seconds
+		while seconds >= 3600:
+			seconds -= 3600
+			hours += 1
+		while seconds >= 60:
+			seconds -=60
+			minutes += 1
+
+		strtime = ''
+		if delta.days != 0:
+			strtime = str(delta.days) + 'd '
+		if hours != 0:
+			strtime += str(hours) + 'h '
+		strtime += str(minutes) + 'm '
+		strtime += str(seconds) + 's'
+
+		say(user + ' has been idle for ' + strtime)
+	except:
+		say(userFrom + ": I haven't seen " + user + " speak.")
 
 ## Handle Input
 handleFlags = {
@@ -353,14 +385,15 @@ handleFlags = {
 	'gag':       lambda userFrom, command: gag(),
 	'ungag':     lambda userFrom, command: ungag(),
 	'info':      lambda userFrom, command: info(command),
-	'infoset':	 lambda userFrom, command: infoset(userFrom, command),
+	'infoset':   lambda userFrom, command: infoset(userFrom, command),
 	'changelog': lambda userFrom, command: changelog(command),
-	'whatis':	 lambda userFrom, command: whatis(userFrom, command),
-	'usermod':	 lambda userFrom, command: usermod(userFrom, command),
-	'fortune':	 lambda userFrom, command: fortune(userFrom, command),
-	'limerick':	 lambda userFrom, command: limerick(userFrom, command),
-	'stuff':	 lambda userFrom, command: stuff(userFrom, command),
-	'ratio':	 lambda userFrom, command: ratio(userFrom, command),
+	'whatis':    lambda userFrom, command: whatis(userFrom, command),
+	'usermod':   lambda userFrom, command: usermod(userFrom, command),
+	'fortune':   lambda userFrom, command: fortune(userFrom, command),
+	'limerick':  lambda userFrom, command: limerick(userFrom, command),
+	'stuff':     lambda userFrom, command: stuff(userFrom, command),
+#	'ratio':     lambda userFrom, command: ratio(userFrom, command),
+	'idle':      lambda userFrom, command: idle(userFrom, command),
 }
 
 # Treat PMs like public flags, except output is sent back in a PM to the user
@@ -416,7 +449,7 @@ def handlePublicMessage(connection, event):
 					new_string, n = re.subn(splitMessage[1], splitMessage[2], s)
 					if n > 0:
 						say(frUser + '> ' + new_string)
-					break
+						break
 			except:
 				say(userFrom + ': No messages found from ' + frUser)
 		else:
@@ -429,6 +462,8 @@ def handlePublicMessage(connection, event):
 		lastmessage[userFrom].insert(0, message)
 	else:
 		lastmessage[userFrom] = [message]
+	#track lastaction
+	lastaction[userFrom] = datetime.utcnow()
 
 	#handle commands
 	if (flag[0] == trigger):
@@ -436,6 +471,23 @@ def handlePublicMessage(connection, event):
 			return handleFlags[flag[1:].lower()](userFrom, ' '.join(command))
 		except KeyError:
 			return True
+
+# Remove people from lastmessage and lastaction
+def handlePart(connection, event):
+	user = event.source().split('!')[0]
+	if user in lastmessage:
+		lastmessage.pop(user)
+	if user in lastaction:
+		lastaction.pop(user)
+
+# Discard lastmessage and move lastaction
+def handleNick(connection, event):
+	oldnick = event.source().split('!')[0]
+	if oldnick in lastmessage:
+		lastmessage.pop(oldnick) #because replaces would show the new nick and that'd look weird
+	if oldnick in lastaction:
+		lastaction[event.target()] = lastaction[oldnick]
+		lastaction.pop(oldnick)
 
 # Handle NickServ successes so that we can join +r channels
 def handleMode(connection, event):
@@ -446,8 +498,10 @@ def handleMode(connection, event):
 ## Final Setup
 # Add handlers
 irc.add_global_handler('privmsg', handlePrivateMessage)
-irc.add_global_handler('pubmsg', handlePublicMessage)
-irc.add_global_handler('umode', handleMode)
+irc.add_global_handler('pubmsg',  handlePublicMessage)
+irc.add_global_handler('part',    handlePart)
+irc.add_global_handler('nick',    handleNick)
+irc.add_global_handler('umode',   handleMode)
 
 # Jump into an infinite loop
 while(True):
@@ -478,6 +532,10 @@ while(True):
 		server.connect(network, port, nick, password=password, ircname=name)
 
 		server.privmsg('NickServ', 'IDENTIFY ' + password)
-		irc.process_forever(timeout=10.0)
+		try:
+			irc.process_forever(timeout=10.0)
+		except KeyboardInterrupt:
+			print "\nCaught ^C, exiting..."
+			sys.exit()
 	except irclib.ServerNotConnectedError:
 		sleep(5)
