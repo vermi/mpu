@@ -440,9 +440,13 @@ def handlePublicMessage(connection, event):
 	# s/find/replace/
 	if (flag[0:2] == 's/'):
 		splitMessage = message.split('/')
-		if (len(splitMessage) == 4):
-			frUser = splitMessage[3].strip()
-			if (frUser == ''):
+		if (len(splitMessage) >= 3):
+			#if s///username, frUser is username
+			#if s// or s///,  frUser is userFrom
+			frUser = ''
+			if len(splitMessage) == 4:
+				frUser = splitMessage[3].strip()
+			if frUser == '':
 				frUser = userFrom
 			try:
 				for s in lastmessage[frUser]:
@@ -453,7 +457,7 @@ def handlePublicMessage(connection, event):
 			except:
 				say(userFrom + ': No messages found from ' + frUser)
 		else:
-			say(userFrom + ': s/find/replace/[ username]')
+			say(userFrom + ': s/find/replace[/ username]')
 
 	# track lastmessage
 	if userFrom in lastmessage:
