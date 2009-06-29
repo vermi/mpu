@@ -295,11 +295,14 @@ def limerick(userFrom, command):
 
 def stuff(userFrom, command):
 	if userFrom not in lastmessage or lastmessage[userFrom].count(trigger + 'stuff') == 1:
-		imoutos = random.randint(0, 10)
-		if (imoutos == 1):
-			imoutos = 'a imouto.'
+		if (userFrom.startswith('Chiyachan')):
+			imoutos = 'over 9000 imoutos.'
 		else:
-			imoutos = str(imoutos) + ' imoutos.'
+			imoutos = random.randint(0, 10)
+			if (imoutos == 1):
+				imoutos = 'a imouto.'
+			else:
+				imoutos = str(imoutos) + ' imoutos.'
 		action('gives ' + userFrom + ' ' + imoutos)
 
 def ratio(userFrom, command):
@@ -493,6 +496,10 @@ def handleNick(connection, event):
 		lastaction[event.target()] = lastaction[oldnick]
 		lastaction.pop(oldnick)
 
+# Handle server welcome so we know when to identify with NickServ
+def handleWelcome(connection, event):
+	server.privmsg('NickServ', 'IDENTIFY ' + password)
+
 # Handle NickServ successes so that we can join +r channels
 def handleMode(connection, event):
 	if event.target() == nick and '+r' in event.arguments():
@@ -505,6 +512,7 @@ irc.add_global_handler('privmsg', handlePrivateMessage)
 irc.add_global_handler('pubmsg',  handlePublicMessage)
 irc.add_global_handler('part',    handlePart)
 irc.add_global_handler('nick',    handleNick)
+irc.add_global_handler('welcome', handleWelcome)
 irc.add_global_handler('umode',   handleMode)
 
 # Jump into an infinite loop
@@ -535,7 +543,6 @@ while(True):
 		server = irc.server()
 		server.connect(network, port, nick, password=password, ircname=name)
 
-		server.privmsg('NickServ', 'IDENTIFY ' + password)
 		try:
 			irc.process_forever(timeout=10.0)
 		except KeyboardInterrupt:
