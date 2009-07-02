@@ -300,7 +300,7 @@ def stuff(userFrom, command):
 		else:
 			imoutos = random.randint(0, 10)
 			if (imoutos == 1):
-				imoutos = 'a imouto.'
+				imoutos = 'an imouto.'
 			else:
 				imoutos = str(imoutos) + ' imoutos.'
 		action('gives ' + userFrom + ' ' + imoutos)
@@ -379,6 +379,10 @@ def idle(userFrom, command):
 	except:
 		say(userFrom + ": I haven't seen " + user + " speak.")
 
+def chnick(userFrom, command):
+	if userFrom == users['owner'] and len(command) > 0:
+		server.nick(command)
+
 ## Handle Input
 handleFlags = {
 	'help':      lambda userFrom, command: help(command),
@@ -394,9 +398,10 @@ handleFlags = {
 	'usermod':   lambda userFrom, command: usermod(userFrom, command),
 	'fortune':   lambda userFrom, command: fortune(userFrom, command),
 	'limerick':  lambda userFrom, command: limerick(userFrom, command),
-	'stuff':     lambda userFrom, command: stuff(userFrom, command),
+#	'stuff':     lambda userFrom, command: stuff(userFrom, command),
 #	'ratio':     lambda userFrom, command: ratio(userFrom, command),
 	'idle':      lambda userFrom, command: idle(userFrom, command),
+	'nick':      lambda userFrom, command: chnick(userFrom, command),
 }
 
 # Treat PMs like public flags, except output is sent back in a PM to the user
@@ -493,7 +498,7 @@ def handleNick(connection, event):
 	if oldnick in lastmessage:
 		lastmessage.pop(oldnick) #because replaces would show the new nick and that'd look weird
 	if oldnick in lastaction:
-		lastaction[event.target()] = lastaction[oldnick]
+		lastaction[event.target()] = datetime.utcnow()
 		lastaction.pop(oldnick)
 
 # Handle server welcome so we know when to identify with NickServ
@@ -506,6 +511,26 @@ def handleMode(connection, event):
 		print "NickServ authentication success!"
 		server.join(channel)
 
+def handleCTCP(connection, event):
+	if event.arguments()[0] == 'ACTION':
+		text = event.arguments()[1]
+		match = re.match('gives (\S+) ([0-9]+) lolis?, ([0-9]+) onee-chans?, ([0-9]+) lions? and ([0-9]+) imoutos?', text)
+		if match != None:
+			glomp = 'everything'
+			if match.group(2) != '0':
+				glomp = 'a loli'
+			elif match.group(3) != '0':
+				glomp = 'an onee-chan'
+			elif match.group(4) != '0':
+				glomp = 'a lion'
+			elif match.group(5) != '0':
+				glomp = 'an imouto'
+			action('glomps ' + glomp)
+	elif event.arguments()[0] == 'VERSION':
+		server.ctcp_reply(event.source().split('!')[0], 'VERSION MPU (http://github.com/raylu/mpu/)')
+	
+	lastaction[event.source().split('!')[0]] = datetime.utcnow()
+
 ## Final Setup
 # Add handlers
 irc.add_global_handler('privmsg', handlePrivateMessage)
@@ -514,6 +539,7 @@ irc.add_global_handler('part',    handlePart)
 irc.add_global_handler('nick',    handleNick)
 irc.add_global_handler('welcome', handleWelcome)
 irc.add_global_handler('umode',   handleMode)
+irc.add_global_handler('ctcp',    handleCTCP)
 
 # Jump into an infinite loop
 while(True):
