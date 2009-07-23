@@ -1,5 +1,6 @@
 network = 'irc.rizon.net'
-port = 6667
+port = 6697
+ssl = True
 nick = ''
 name = ''
 password = ''

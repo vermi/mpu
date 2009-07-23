@@ -454,6 +454,8 @@ def handlePublicMessage(connection, event):
 			frUser = ''
 			if len(splitMessage) == 4:
 				frUser = splitMessage[3].strip()
+				if frUser.startswith('Chiyachan') or frUser.startswith('Lolitachan') or frUser.startswith('Freyachan'):
+					return
 			if frUser == '':
 				frUser = userFrom
 			try:
@@ -567,7 +569,7 @@ while(True):
 
 		# Create a server object, connect and join the channel
 		server = irc.server()
-		server.connect(network, port, nick, password=password, ircname=name)
+		server.connect(network, port, nick, password=password, ircname=name, ssl=dirty_secrets.ssl)
 
 		try:
 			irc.process_forever(timeout=10.0)
