@@ -311,7 +311,7 @@ def ratio(userFrom, command):
 		user = command
 	try:
 		req = urllib2.Request('http://www.bakabt.com/users.php?search=' + user)
-		req.add_header('Cookie', 'uid=498909;pass=01625f5744266125386aea6b77118f8b')
+		req.add_header('Cookie', 'uid=498909;pass=')
 		html = urllib2.urlopen(req).read()
 		start = html.find('href="user/') + 6
 		end = html.find('">', start)
@@ -398,7 +398,7 @@ handleFlags = {
 	'usermod':   lambda userFrom, command: usermod(userFrom, command),
 	'fortune':   lambda userFrom, command: fortune(userFrom, command),
 	'limerick':  lambda userFrom, command: limerick(userFrom, command),
-#	'stuff':     lambda userFrom, command: stuff(userFrom, command),
+	'stuff':     lambda userFrom, command: stuff(userFrom, command),
 #	'ratio':     lambda userFrom, command: ratio(userFrom, command),
 	'idle':      lambda userFrom, command: idle(userFrom, command),
 	'nick':      lambda userFrom, command: chnick(userFrom, command),
@@ -476,10 +476,10 @@ def handlePublicMessage(connection, event):
 		lastmessage[userFrom].insert(0, message)
 	else:
 		lastmessage[userFrom] = [message]
-	#track lastaction
+	# track lastaction
 	lastaction[userFrom] = datetime.utcnow()
 
-	#handle commands
+	# handle commands
 	if (flag[0] == trigger):
 		try:
 			return handleFlags[flag[1:].lower()](userFrom, ' '.join(command))
