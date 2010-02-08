@@ -544,7 +544,7 @@ irc.add_global_handler('umode',   handleMode)
 irc.add_global_handler('ctcp',    handleCTCP)
 
 # Jump into an infinite loop
-while(True):
+while True:
 	try:
 		# dictionary to group information about files we need
 		files = {}
@@ -572,7 +572,8 @@ while(True):
 		server.connect(network, port, nick, password=password, ircname=name, ssl=dirty_secrets.ssl)
 
 		try:
-			irc.process_forever(timeout=10.0)
+			while server.is_connected():
+				irc.process_once(timeout=15.0)
 		except KeyboardInterrupt:
 			print "\nCaught ^C, exiting..."
 			sys.exit()
