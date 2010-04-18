@@ -14,11 +14,11 @@ import irclib
 import dirty_secrets
 import random
 import urllib2
-import re
 from datetime import datetime, time, timedelta
 import gdata.youtube
 import gdata.youtube.service
 import json
+from htmlentitydefs import name2codepoint as n2cp
 
 ## Beginning Setup
 # Connection information
@@ -394,9 +394,31 @@ def qdb(userFrom, command):
 		try:
 			html = urllib2.urlopen('http://www.chalamius.se/quotes/api/json/' + command)
 			quote = json.load(html)
-			say(quote['content'].replace('\r\n', ' '))
+			content = quote['content'].replace('\r\n', ' ')
+			say(decode_htmlentities(content))
 		except:
 			say("%s: Error while retrieving quote." % userFrom)
+
+def substitute_entity(match):
+	ent = match.group(3)
+
+	if match.group(1) == "#":
+		if match.group(2) == '':
+			return unichr(int(ent))
+		elif match.group(2) == 'x':
+			return unichr(int('0x'+ent, 16))
+	else:
+		cp = n2cp.get(ent)
+
+		if cp:
+			return unichr(cp)
+		else:
+			return match.group()
+
+def decode_htmlentities(string):
+	entity_re = re.compile(r'&(#?)(x?)(\w+);')
+	return entity_re.subn(substitute_entity, string)[0]
+
 
 ## Handle Input
 handleFlags = {
