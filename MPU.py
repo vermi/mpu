@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2.6
 
 '''
 MPU bot by James Pearson
@@ -18,6 +18,7 @@ import re
 from datetime import datetime, time, timedelta
 import gdata.youtube
 import gdata.youtube.service
+import json
 
 ## Beginning Setup
 # Connection information
@@ -388,6 +389,15 @@ def chnick(userFrom, command):
 	if userFrom == users['owner'] and len(command) > 0:
 		server.nick(command)
 
+def qdb(userFrom, command):
+	if len(command) > 0 and command.isdigit():
+		try:
+			html = urllib2.urlopen('http://www.chalamius.se/quotes/api/json/' + command)
+			quote = json.load(html)
+			say(quote['content'].replace('\r\n', ' '))
+		except:
+			say("%s: Error while retrieving quote." % userFrom)
+
 ## Handle Input
 handleFlags = {
 	'help':      lambda userFrom, command: help(command),
@@ -407,6 +417,7 @@ handleFlags = {
 #	'ratio':     lambda userFrom, command: ratio(userFrom, command),
 	'idle':      lambda userFrom, command: idle(userFrom, command),
 	'nick':      lambda userFrom, command: chnick(userFrom, command),
+	'qdb':       lambda userFrom, command: qdb(userFrom, command),
 }
 
 # Treat PMs like public flags, except output is sent back in a PM to the user
