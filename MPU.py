@@ -16,6 +16,8 @@ import random
 import urllib2
 import re
 from datetime import datetime, time, timedelta
+import gdata.youtube
+import gdata.youtube.service
 
 ## Beginning Setup
 # Connection information
@@ -30,6 +32,9 @@ trigger = '!'
 gagged = False
 lastmessage = { }
 lastaction = { }
+
+yt_service = gdata.youtube.service.YouTubeService()
+yt_service.developer_key = 'AI39si7bsw0DiAFUUUeG-idPa--w4I2w3SA-IAVMXIkfY7ml0Aw6fP6fN-u248cLyjuWZkFVbxoqV5MdyjA_th4dUD4Y8vvo5A'
 
 # Create an IRC object
 irc = irclib.IRC()
@@ -479,6 +484,30 @@ def handlePublicMessage(connection, event):
 	# track lastaction
 	lastaction[userFrom] = datetime.utcnow()
 
+	# handle youtube
+	vid = ''
+	if flag[0:31] == 'http://www.youtube.com/watch?v=':
+		vid = flag[31:]
+	if flag[0:27] == 'http://youtube.com/watch?v=':
+		vid = flag[27:]
+	if vid != '':
+		try:
+			amp = vid.find('&')
+			if amp != -1:
+				vid = vid[0:amp]
+			entry = yt_service.GetYouTubeVideoEntry(video_id=vid)
+
+			seconds = long(entry.media.duration.seconds)
+			minutes, seconds = divmod(seconds, 60)
+			hours, minutes = divmod(minutes, 60)
+			duration = '%02d:%02d' % (minutes, seconds)
+			if hours > 0:
+				duration = '%s:%s' % (hours, duration)
+
+			say("%s's video: %s, %s, %s" % (userFrom, entry.media.title.text, entry.media.description.text, duration))
+		except:
+			pass
+
 	# handle commands
 	if (flag[0] == trigger):
 		try:
@@ -510,7 +539,6 @@ def handleWelcome(connection, event):
 # Handle NickServ successes so that we can join +r channels
 def handleMode(connection, event):
 	if event.target() == nick and '+r' in event.arguments():
-		print "NickServ authentication success!"
 		server.join(channel)
 
 def handleCTCP(connection, event):
