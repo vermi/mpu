@@ -390,8 +390,8 @@ def chnick(userFrom, command):
 		server.nick(command)
 
 def qdb(userFrom, command):
-	if len(command) > 0 and command.isdigit():
-		try:
+	try:
+		if len(command) > 0 and command.isdigit():
 			html = urllib2.urlopen('http://www.chalamius.se/quotes/api/json/' + command)
 			quote = json.load(html)
 			content = quote['content'].replace('\r\n', ' ')
@@ -400,8 +400,17 @@ def qdb(userFrom, command):
 				say(content)
 			else:
 				say('http://www.chalamius.se/quotes/?p=quote&id=' + command)
-		except:
-			say("%s: Error while retrieving quote." % userFrom)
+		else:
+			while True:
+				html = urllib2.urlopen('http://www.chalamius.se/quotes/api2.php?p=random&r=json')
+				quote = json.load(html)
+				content = quote['content'].replace('\r\n', ' ')
+				content = decode_htmlentities(content)
+				if len(content) < 350:
+					break
+			say(quote['id'] + ': ' + content)
+	except:
+		say("%s: Error while retrieving quote." % userFrom)
 
 def substitute_entity(match):
 	ent = match.group(3)
