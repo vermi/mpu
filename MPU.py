@@ -395,7 +395,11 @@ def qdb(userFrom, command):
 			html = urllib2.urlopen('http://www.chalamius.se/quotes/api/json/' + command)
 			quote = json.load(html)
 			content = quote['content'].replace('\r\n', ' ')
-			say(decode_htmlentities(content))
+			content = decode_htmlentities(content)
+			if len(content) < 450: # actual limit is 512, but that is the raw line
+				say(content)
+			else:
+				say('http://www.chalamius.se/quotes/?p=quote&id=' + command)
 		except:
 			say("%s: Error while retrieving quote." % userFrom)
 
