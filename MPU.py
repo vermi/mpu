@@ -571,11 +571,12 @@ def handleNick(connection, event):
 
 # Handle server welcome so we know when to identify with NickServ
 def handleWelcome(connection, event):
-	server.privmsg('NickServ', 'IDENTIFY ' + password)
+	if len(password) > 0:
+		server.privmsg('NickServ', 'IDENTIFY ' + password)
 
 # Handle NickServ successes so that we can join +r channels
 def handleMode(connection, event):
-	if event.target() == nick and '+r' in event.arguments():
+	if (event.target() == nick and '+r' in event.arguments()) or len(password) == 0:
 		server.join(channel)
 
 def handleCTCP(connection, event):
