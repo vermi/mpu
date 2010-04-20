@@ -437,7 +437,7 @@ def translate(userFrom, command):
 	langpairs = ''
 	while True:
 		split = command.split(' ', 1)
-		if len(split) == 2 and split[0][2] == '|':
+		if len(split) == 2 and len(split[0]) == 5 and split[0][2] == '|':
 			langpairs += '&langpair=' + split[0]
 			command = split[1]
 		else:
