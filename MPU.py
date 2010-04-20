@@ -37,6 +37,7 @@ lastaction = { }
 
 yt_service = gdata.youtube.service.YouTubeService()
 yt_service.developer_key = 'AI39si7bsw0DiAFUUUeG-idPa--w4I2w3SA-IAVMXIkfY7ml0Aw6fP6fN-u248cLyjuWZkFVbxoqV5MdyjA_th4dUD4Y8vvo5A'
+google_key = 'ABQIAAAA6-N_jl4ETgtMf2M52JJ_WRQjQjNunkAJHIhTdFoxe8Di7fkkYhRRcys7ZxNbH3MIy_MKKcEO4-9_Ag'
 
 # Create an IRC object
 irc = irclib.IRC()
@@ -443,18 +444,17 @@ def translate(userFrom, command):
 		else:
 			break
 
-	key = 'ABQIAAAA6-N_jl4ETgtMf2M52JJ_WRQjQjNunkAJHIhTdFoxe8Di7fkkYhRRcys7ZxNbH3MIy_MKKcEO4-9_Ag'
 	try:
 		q = quote_plus(command)
 		if len(langpairs) > 0:
-			requrl = "http://ajax.googleapis.com/ajax/services/language/translate?v=1.0&q=%s%s&key=%s" % (q, langpairs, key)
+			requrl = "http://ajax.googleapis.com/ajax/services/language/translate?v=1.0&q=%s%s&key=%s" % (q, langpairs, google_key)
 			req = urllib2.Request(requrl)
 			req.add_header('Referer', 'http://raylu.eth24.net/')
 			response = urllib2.urlopen(req)
 			tr = json.load(response)
 			say_response(tr)
 		else:
-			requrl = "http://ajax.googleapis.com/ajax/services/language/detect?v=1.0&q=%s&key=%s" % (q, key)
+			requrl = "http://ajax.googleapis.com/ajax/services/language/detect?v=1.0&q=%s&key=%s" % (q, google_key)
 			req = urllib2.Request(requrl)
 			req.add_header('Referer', 'http://raylu.eth24.net/')
 			response = urllib2.urlopen(req)
@@ -463,7 +463,6 @@ def translate(userFrom, command):
 			say("Language: %s, Reliable: %s, Confidence: %f" % (tr['language'], tr['isReliable'], tr['confidence']))
 	except:
 		say(userFrom + ': Error while translating.')
-
 
 def say_response(tr):
 	if 'responseStatus' in tr:
@@ -477,6 +476,23 @@ def say_response(tr):
 	else:
 		for r in tr:
 			say_response(r)
+
+def calc(userFrom, command):
+	if len(command) > 0:
+		try:
+			q = quote_plus(command)
+			requrl = "http://www.google.com/ig/calculator?hl=en&q=%s&key=%s" % (q, google_key)
+			req = urllib2.Request(requrl)
+			req.add_header('Referer', 'http://raylu.eth24.net/')
+			response = urllib2.urlopen(req).read()
+
+			match = re.match('{lhs: "(.*)",rhs: "(.*)",error: "(.*)",icc: (true|false)}', response)
+			if match == None or match.group(3) != '':
+				say(userFrom + ': Error while calculating.')
+			else:
+				say("%s: %s = %s" % (userFrom, match.group(1), match.group(2)))
+		except:
+			say(userFrom + ': Error while calculating.')
 
 ## Handle Input
 handleFlags = {
@@ -499,6 +515,7 @@ handleFlags = {
 	'nick':      lambda userFrom, command: chnick(userFrom, command),
 	'qdb':       lambda userFrom, command: qdb(userFrom, command),
 	'tr':        lambda userFrom, command: translate(userFrom, command),
+	'calc':      lambda userFrom, command: calc(userFrom, command),
 }
 
 # Treat PMs like public flags, except output is sent back in a PM to the user
