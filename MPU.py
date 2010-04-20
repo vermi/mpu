@@ -14,7 +14,8 @@ import irclib
 import dirty_secrets
 import random
 import urllib2
-from datetime import datetime, time, timedelta
+from urllib import quote_plus
+from datetime import datetime, time
 import gdata.youtube
 import gdata.youtube.service
 import json
@@ -432,6 +433,50 @@ def decode_htmlentities(string):
 	entity_re = re.compile(r'&(#?)(x?)(\w+);')
 	return entity_re.subn(substitute_entity, string)[0]
 
+def translate(userFrom, command):
+	langpairs = ''
+	while True:
+		split = command.split(' ', 1)
+		if len(split) == 2 and split[0][2] == '|':
+			langpairs += '&langpair=' + split[0]
+			command = split[1]
+		else:
+			break
+
+	key = 'ABQIAAAA6-N_jl4ETgtMf2M52JJ_WRQjQjNunkAJHIhTdFoxe8Di7fkkYhRRcys7ZxNbH3MIy_MKKcEO4-9_Ag'
+	try:
+		q = quote_plus(command)
+		if len(langpairs) > 0:
+			requrl = "http://ajax.googleapis.com/ajax/services/language/translate?v=1.0&q=%s%s&key=%s" % (q, langpairs, key)
+			req = urllib2.Request(requrl)
+			req.add_header('Referer', 'http://raylu.eth24.net/')
+			response = urllib2.urlopen(req)
+			tr = json.load(response)
+			say_response(tr)
+		else:
+			requrl = "http://ajax.googleapis.com/ajax/services/language/detect?v=1.0&q=%s&key=%s" % (q, key)
+			req = urllib2.Request(requrl)
+			req.add_header('Referer', 'http://raylu.eth24.net/')
+			response = urllib2.urlopen(req)
+			tr = json.load(response)
+			tr = tr['responseData']
+			say("Language: %s, Reliable: %s, Confidence: %f" % (tr['language'], tr['isReliable'], tr['confidence']))
+	except:
+		say(userFrom + ': Error while translating.')
+
+
+def say_response(tr):
+	if 'responseStatus' in tr:
+		if tr['responseStatus'] != 200:
+			say(tr['responseDetails'])
+	if 'responseData' in tr:
+		say_response(tr['responseData'])
+	elif 'translatedText' in tr:
+		tr_text = tr['translatedText'].encode('utf-8')
+		say(tr_text)
+	else:
+		for r in tr:
+			say_response(r)
 
 ## Handle Input
 handleFlags = {
@@ -453,6 +498,7 @@ handleFlags = {
 	'idle':      lambda userFrom, command: idle(userFrom, command),
 	'nick':      lambda userFrom, command: chnick(userFrom, command),
 	'qdb':       lambda userFrom, command: qdb(userFrom, command),
+	'tr':        lambda userFrom, command: translate(userFrom, command),
 }
 
 # Treat PMs like public flags, except output is sent back in a PM to the user
