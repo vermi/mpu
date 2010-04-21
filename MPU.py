@@ -20,7 +20,6 @@ import gdata.youtube
 import gdata.youtube.service
 import json
 from htmlentitydefs import name2codepoint as n2cp
-import yaml
 
 ## Beginning Setup
 # Connection information
@@ -485,12 +484,13 @@ def calc(userFrom, command):
 			requrl = "http://www.google.com/ig/calculator?hl=en&q=%s&key=%s" % (q, google_key)
 			req = urllib2.Request(requrl)
 			req.add_header('Referer', 'http://raylu.eth24.net/')
-			response = urllib2.urlopen(req)
-			eq = yaml.load(response)
-			if eq['error'] != '':
+			response = urllib2.urlopen(req).read()
+
+			match = re.match('{lhs: "(.*)",rhs: "(.*)",error: "(.*)",icc: (true|false)}', response)
+			if match == None or match.group(3) != '':
 				say(userFrom + ': Error while calculating.')
 			else:
-				say("%s: %s = %s" % (userFrom, eq['lhs'], eq['rhs']))
+				say("%s: %s = %s" % (userFrom, match.group(1), match.group(2)))
 		except:
 			say(userFrom + ': Error while calculating.')
 
