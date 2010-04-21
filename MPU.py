@@ -395,21 +395,21 @@ def chnick(userFrom, command):
 def qdb(userFrom, command):
 	try:
 		if len(command) > 0 and command.isdigit():
-			html = urllib2.urlopen('http://www.chalamius.se/quotes/api/json/' + command)
+			html = urllib2.urlopen('http://www.chalamius.se/quotes/api/json/quote/' + command)
 			quote = json.load(html)
 			content = quote['content'].replace('\r\n', ' ')
-			content = decode_htmlentities(content)
+			content = decode_htmlentities(content).encode('utf-8')
 			if len(content) < 450: # actual limit is 512, but that is the raw line
 				say(content)
 			else:
 				say('http://www.chalamius.se/quotes/?p=quote&id=' + command)
 		else:
 			while True:
-				html = urllib2.urlopen('http://www.chalamius.se/quotes/api2.php?p=random&r=json')
+				html = urllib2.urlopen('http://www.chalamius.se/quotes/api/json/random')
 				quote = json.load(html)
 				content = quote['content'].replace('\r\n', ' ')
-				content = decode_htmlentities(content)
-				if len(content) < 350:
+				content = decode_htmlentities(content).encode('utf-8')
+				if len(content) < 450:
 					break
 			say(quote['id'] + ': ' + content)
 	except:
