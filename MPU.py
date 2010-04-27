@@ -15,11 +15,14 @@ import dirty_secrets
 import random
 import urllib2
 from urllib import quote_plus
-from datetime import datetime, time
+from datetime import datetime, time, timedelta
 import gdata.youtube
 import gdata.youtube.service
 import json
 from htmlentitydefs import name2codepoint as n2cp
+import gzip
+import os
+import stat
 
 ## Beginning Setup
 # Connection information
@@ -494,6 +497,53 @@ def calc(userFrom, command):
 		except:
 			say(userFrom + ': Error while calculating.')
 
+def anidb(userFrom, command):
+	try:
+		atime = datetime.fromtimestamp(os.stat('animetitles.dat')[stat.ST_MTIME])
+		d = datetime.now() - atime
+		if d > timedelta(0, 0, 0, 0, 0, 12, 0):
+			update_anidb()
+	except OSError:
+		update_anidb()
+
+	if len(command) < 2:
+		return
+	regex = re.compile(command, re.IGNORECASE)
+	aid = [ ]
+
+	anidb_file = open('animetitles.dat', 'r')
+	for line in anidb_file:
+		if line[0] != '#':
+			split = line.split('|')
+			if split[1] != '3' and regex.search(split[3]) and split[0] not in aid:
+				aid.append(split[0])
+	anidb_file.seek(0, 0)
+	aid_text = [ ]
+	for line in anidb_file:
+		if line[0] != '#':
+			split = line.split('|')
+			if split[1] == '1' and split[0] in aid:
+				aid_text.append(split[0] + '|' + split[3][:-1])
+	anidb_file.close()
+
+	say(', '.join(aid_text))
+
+def update_anidb():
+	try:
+		say("Updating anidb titles...")
+		gzdata = urllib2.urlopen('http://anidb.net/api/animetitles.dat.gz')
+		anidbgz_file = open('animetitles.dat.gz', 'wb')
+		anidbgz_file.write(gzdata.read())
+		anidbgz_file.close()
+		anidb_file = open('animetitles.dat', 'wb')
+		anidbgz_file = gzip.open('animetitles.dat.gz', 'rb')
+		anidb_file.write(anidbgz_file.read())
+		anidbgz_file.close()
+		anidb_file.close()
+		os.remove('animetitles.dat.gz')
+	except:
+		say("Error while updating anidb titles.")
+
 ## Handle Input
 handleFlags = {
 	'help':      lambda userFrom, command: help(command),
@@ -516,6 +566,7 @@ handleFlags = {
 	'qdb':       lambda userFrom, command: qdb(userFrom, command),
 	'tr':        lambda userFrom, command: translate(userFrom, command),
 	'calc':      lambda userFrom, command: calc(userFrom, command),
+	'anidb':     lambda userFrom, command: anidb(userFrom, command),
 }
 
 # Treat PMs like public flags, except output is sent back in a PM to the user
