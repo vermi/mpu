@@ -578,18 +578,19 @@ def aid(userFrom, command):
 		enddate = get_xml_value(dom, 'enddate')
 		server.notice(userFrom, "%s, %s episodes, %s - %s" % (stype, episodes, startdate, enddate))
 
-		related = [ ]
-		typelen = 0
-		relatedanime = dom.getElementsByTagName('relatedanime')[0]
-		for node in relatedanime.getElementsByTagName('anime'):
-			raid = node.getAttribute('id')
-			rtype = node.getAttribute('type')
-			rtitle = node.firstChild.nodeValue
-			related.append((rtype, "%s|%s" % (raid, rtitle)))
-			if len(rtype) > typelen :
-				typelen = len(rtype)
-		for a in related:
-			server.notice(userFrom, ("%" + str(typelen) + "s: %s") % a)
+		relatedanime = dom.getElementsByTagName('relatedanime')
+		if len(relatedanime) > 0:
+			related = [ ]
+			typelen = 0
+			for node in relatedanime[0].getElementsByTagName('anime'):
+				raid = node.getAttribute('id')
+				rtype = node.getAttribute('type')
+				rtitle = node.firstChild.nodeValue
+				related.append((rtype, "%s|%s" % (raid, rtitle)))
+				if len(rtype) > typelen :
+					typelen = len(rtype)
+			for a in related:
+				server.notice(userFrom, ("%" + str(typelen) + "s: %s") % a)
 
 		server.notice(userFrom, 'http://anidb.net/perl-bin/animedb.pl?show=anime&aid=' + aid)
 	except:
