@@ -23,6 +23,7 @@ from htmlentitydefs import name2codepoint as n2cp
 import gzip
 import os
 import stat
+import xml.dom.minidom as minidom
 
 ## Beginning Setup
 # Connection information
@@ -544,6 +545,68 @@ def update_anidb():
 	except:
 		say("Error while updating anidb titles.")
 
+def aid(userFrom, command):
+	if command.isdigit():
+		aid = command
+	else:
+		return
+	a_file = "anidb/%s.xml.gz" % aid
+	try:
+		atime = datetime.fromtimestamp(os.stat(a_file)[stat.ST_MTIME])
+		d = datetime.now() - atime
+		if d > timedelta(0, 0, 0, 0, 0, 24, 0):
+			get_anidb(aid)
+	except OSError:
+		get_anidb(aid)
+
+	try:
+		xml_file = gzip.open(a_file)
+		dom = minidom.parse(xml_file)
+
+		titles = [ ]
+		anime = dom.getElementsByTagName('anime')[0]
+		for node in anime.getElementsByTagName('title'):
+			tlang = node.getAttribute('xml:lang')
+			ttype = node.getAttribute('type')
+			if (tlang == 'x-jat' and ttype == 'main') or (ttype == 'official' and tlang in ('ja', 'en')):
+				titles.append(node.firstChild.nodeValue.encode('utf-8'))
+		server.notice(userFrom, "%s: %s" % (aid, ', '.join(titles)))
+
+		stype = get_xml_value(dom, 'type')
+		episodes = get_xml_value(dom, 'episodecount')
+		startdate = get_xml_value(dom, 'startdate')
+		enddate = get_xml_value(dom, 'enddate')
+		server.notice(userFrom, "%s, %s episodes, %s - %s" % (stype, episodes, startdate, enddate))
+
+		related = [ ]
+		typelen = 0
+		relatedanime = dom.getElementsByTagName('relatedanime')[0]
+		for node in relatedanime.getElementsByTagName('anime'):
+			raid = node.getAttribute('id')
+			rtype = node.getAttribute('type')
+			rtitle = node.firstChild.nodeValue
+			related.append((rtype, "%s|%s" % (raid, rtitle)))
+			if len(rtype) > typelen :
+				typelen = len(rtype)
+		for a in related:
+			server.notice(userFrom, ("%" + str(typelen) + "s: %s") % a)
+
+		server.notice(userFrom, 'http://anidb.net/perl-bin/animedb.pl?show=anime&aid=' + aid)
+	except:
+		say("Error while reading data for aid %s." % aid)
+
+def get_xml_value(dom, tag):
+	return dom.getElementsByTagName(tag)[0].firstChild.nodeValue
+
+def get_anidb(aid):
+	try:
+		xml = urllib2.urlopen('http://api.anidb.net:9001/httpapi?request=anime&client=mpuboth&clientver=1&protover=1&aid=' + aid)
+		xml_file = open("anidb/%s.xml.gz" % aid, 'wb')
+		xml_file.write(xml.read())
+		xml_file.close()
+	except:
+		print "Error while getting aid %s." % aid
+
 ## Handle Input
 handleFlags = {
 	'help':      lambda userFrom, command: help(command),
@@ -567,6 +630,7 @@ handleFlags = {
 	'tr':        lambda userFrom, command: translate(userFrom, command),
 	'calc':      lambda userFrom, command: calc(userFrom, command),
 	'anidb':     lambda userFrom, command: anidb(userFrom, command),
+	'aid':       lambda userFrom, command: aid(userFrom, command),
 }
 
 # Treat PMs like public flags, except output is sent back in a PM to the user
