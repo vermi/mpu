@@ -518,16 +518,19 @@ def anidb(userFrom, command):
 			split = line.split('|')
 			if split[1] != '3' and regex.search(split[3]) and split[0] not in aid:
 				aid.append(split[0])
-	anidb_file.seek(0, 0)
-	aid_text = [ ]
-	for line in anidb_file:
-		if line[0] != '#':
-			split = line.split('|')
-			if split[1] == '1' and split[0] in aid:
-				aid_text.append(split[0] + '|' + split[3][:-1])
-	anidb_file.close()
 
-	say(', '.join(aid_text))
+	if len(aid) > 0 and len(aid) < 16:
+		anidb_file.seek(0, 0)
+		aid_text = [ ]
+		for line in anidb_file:
+			if line[0] != '#':
+				split = line.split('|')
+				if split[1] == '1' and split[0] in aid:
+					aid_text.append(split[0] + '|' + split[3][:-1])
+		say(', '.join(aid_text))
+	else:
+		say(userFrom + ': Too many search results.')
+	anidb_file.close()
 
 def update_anidb():
 	try:
