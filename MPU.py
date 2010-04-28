@@ -528,6 +528,8 @@ def anidb(userFrom, command):
 				if split[1] == '1' and split[0] in aid:
 					aid_text.append(split[0] + '|' + split[3][:-1])
 		say(', '.join(aid_text))
+	elif len(aid) == 0:
+		say(userFrom + ': No search results.')
 	else:
 		say(userFrom + ': Too many search results.')
 	anidb_file.close()
