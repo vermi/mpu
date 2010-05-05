@@ -494,7 +494,7 @@ def calc(userFrom, command):
 			if match == None or match.group(3) != '':
 				say(userFrom + ': Error while calculating.')
 			else:
-				say("%s: %s = %s" % (userFrom, match.group(1), match.group(2)))
+				say("%s = %s" % (match.group(1), match.group(2)))
 		except:
 			say(userFrom + ': Error while calculating.')
 
@@ -734,7 +734,7 @@ def handlePublicMessage(connection, event):
 			if hours > 0:
 				duration = '%s:%s' % (hours, duration)
 
-			say("%s's video: %s, %s, %s" % (userFrom, entry.media.title.text, entry.media.description.text, duration))
+			say("%s's video: %s, %s" % (userFrom, entry.media.title.text, duration))
 		except:
 			pass
 
