@@ -700,7 +700,7 @@ def handlePublicMessage(connection, event):
 						say(frUser + '> ' + new_string)
 						break
 			except:
-				say(userFrom + ': No messages found from ' + frUser)
+				say(userFrom + ': regex error.')
 		else:
 			say(userFrom + ': s/find/replace[/ username]')
 
