@@ -307,14 +307,11 @@ def limerick(userFrom, command):
 
 def stuff(userFrom, command):
 	if userFrom not in lastmessage or lastmessage[userFrom].count(trigger + 'stuff') == 1:
-		if (userFrom.startswith('Chiyachan')):
-			imoutos = 'over 9000 imoutos.'
+		imoutos = random.randint(0, 10)
+		if (imoutos == 1):
+			imoutos = 'an imouto.'
 		else:
-			imoutos = random.randint(0, 10)
-			if (imoutos == 1):
-				imoutos = 'an imouto.'
-			else:
-				imoutos = str(imoutos) + ' imoutos.'
+			imoutos = str(imoutos) + ' imoutos.'
 		action('gives ' + userFrom + ' ' + imoutos)
 
 def ratio(userFrom, command):
@@ -689,8 +686,6 @@ def handlePublicMessage(connection, event):
 			frUser = ''
 			if len(splitMessage) == 4:
 				frUser = splitMessage[3].strip()
-				if frUser.startswith('Chiyachan') or frUser.startswith('Lolitachan') or frUser.startswith('Freyachan'):
-					return
 			if frUser == '':
 				frUser = userFrom
 			try:
