@@ -36,6 +36,10 @@ name = dirty_secrets.name
 trigger = '!'
 
 gagged = False
+gag_points = 0
+gag_time = datetime.utcnow()
+gag_lastmessage = ''
+
 lastmessage = { }
 lastaction = { }
 
@@ -49,11 +53,28 @@ irc = irclib.IRC()
 ## Methods
 # a shortened way to send messages to the channel
 def say(message):
-	if(not gagged):
+	global gag_points, gag_time, gag_lastmessage, gagged
+	gag_points += 5
+	gag_points -= (datetime.utcnow() - gag_time).seconds
+	if gag_points < 0:
+		gag_points = 0
+	elif message == gag_lastmessage:
+		gag_points *= 2
+
+	if gag_points > 15:
+		action("gags himself.")
+		gagged = True
+	else:
+		gagged = False
+	gag_time = datetime.utcnow()
+	gag_lastmessage = message
+
+	if not gagged:
 		server.privmsg(channel, message)
 		sleep(1)
+
 def action(message):
-	if(not gagged):
+	if not gagged:
 		server.action(channel, message)
 		sleep(1)
 
@@ -142,8 +163,9 @@ def gag():
 	return True
 
 def ungag():
-	global gagged
+	global gagged, gag_points
 	gagged = False
+	gag_points = 10
 	return True
 
 def info(command):
@@ -608,7 +630,7 @@ def get_anidb(aid):
 		xml_file.write(xml.read())
 		xml_file.close()
 	except:
-		print "Error while getting aid %s." % aid
+		say("Error while getting aid %s." % aid)
 
 ## Handle Input
 handleFlags = {
