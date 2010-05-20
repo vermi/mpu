@@ -509,10 +509,7 @@ def transliterate(userFrom, command):
 		req.add_header('User-agent', 'Mozilla/5.0')
 		response = urllib2.urlopen(req)
 		tr = json.load(response)
-		print tr
-		print tr['sentences']
-		print tr['sentences'][0]
-		say(tr['sentences'][0]['translit'])
+		say(tr['sentences'][0]['translit'].encode('utf-8'))
 	except:
 		say(userFrom + ': Error while transliterating from Japanese.')
 
