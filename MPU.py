@@ -500,6 +500,19 @@ def say_response(tr):
 		for r in tr:
 			say_response(r)
 
+def transliterate(userFrom, command):
+	if len(command) == 0:
+		return
+	q = quote_plus(command)
+	req = urllib2.Request('http://translate.google.com/translate_a/t?client=t&hl=ja&sl=ja&tl=en-U&text=' + q)
+	req.add_header('User-agent', 'Mozilla/5.0')
+	response = urllib2.urlopen(req)
+	tr = json.load(response)
+	print tr
+	print tr['sentences']
+	print tr['sentences'][0]
+	say(tr['sentences'][0]['translit'])
+
 def calc(userFrom, command):
 	if len(command) > 0:
 		try:
@@ -653,6 +666,7 @@ handleFlags = {
 	'nick':      lambda userFrom, command: chnick(userFrom, command),
 	'qdb':       lambda userFrom, command: qdb(userFrom, command),
 	'tr':        lambda userFrom, command: translate(userFrom, command),
+	'roman':     lambda userFrom, command: transliterate(userFrom, command),
 	'calc':      lambda userFrom, command: calc(userFrom, command),
 	'anidb':     lambda userFrom, command: anidb(userFrom, command),
 	'aid':       lambda userFrom, command: aid(userFrom, command),
