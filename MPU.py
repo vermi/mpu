@@ -503,15 +503,18 @@ def say_response(tr):
 def transliterate(userFrom, command):
 	if len(command) == 0:
 		return
-	q = quote_plus(command)
-	req = urllib2.Request('http://translate.google.com/translate_a/t?client=t&hl=ja&sl=ja&tl=en-U&text=' + q)
-	req.add_header('User-agent', 'Mozilla/5.0')
-	response = urllib2.urlopen(req)
-	tr = json.load(response)
-	print tr
-	print tr['sentences']
-	print tr['sentences'][0]
-	say(tr['sentences'][0]['translit'])
+	try:
+		q = quote_plus(command)
+		req = urllib2.Request('http://translate.google.com/translate_a/t?client=t&hl=ja&sl=ja&tl=en-U&text=' + q)
+		req.add_header('User-agent', 'Mozilla/5.0')
+		response = urllib2.urlopen(req)
+		tr = json.load(response)
+		print tr
+		print tr['sentences']
+		print tr['sentences'][0]
+		say(tr['sentences'][0]['translit'])
+	except:
+		say(userFrom + ': Error while transliterating from Japanese.')
 
 def calc(userFrom, command):
 	if len(command) > 0:
