@@ -508,10 +508,12 @@ def transliterate(userFrom, command):
 		req = urllib2.Request('http://translate.google.com/translate_a/t?client=t&hl=ja&sl=ja&tl=en-U&text=' + q)
 		req.add_header('User-agent', 'Mozilla/5.0')
 		response = urllib2.urlopen(req)
-		tr = json.load(response)
-		say(tr['sentences'][0]['translit'].encode('utf-8'))
-	except:
+		tr = response.read().split('"', 6)[5]
+		say(tr.encode('utf-8'))
+		#say(tr['sentences'][0]['translit'].encode('utf-8'))
+	except Exception as e:
 		say(userFrom + ': Error while transliterating from Japanese.')
+		print e
 
 def calc(userFrom, command):
 	if len(command) > 0:
