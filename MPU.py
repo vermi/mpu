@@ -158,8 +158,9 @@ def kill(userFrom):
 		say("You can kill a man, but you can't kill an idea manifested in Python.")
 
 def gag():
-	global gagged
+	global gagged, gag_points
 	gagged = True
+	gag_points = 300
 	return True
 
 def ungag():
