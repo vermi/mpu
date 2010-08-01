@@ -51,7 +51,6 @@ google_key = 'ABQIAAAA6-N_jl4ETgtMf2M52JJ_WRQjQjNunkAJHIhTdFoxe8Di7fkkYhRRcys7Zx
 irc = irclib.IRC()
 
 ## Methods
-# a shortened way to send messages to the channel
 def say(message):
 	global gag_points, gag_time, gag_lastmessage, gagged
 	gag_points += 5
@@ -77,6 +76,10 @@ def action(message):
 	if not gagged:
 		server.action(channel, message)
 		sleep(1)
+
+def log(text):
+	logFile = open('MPU.log', 'a')
+	return logFile.write(strftime("%Y-%m-%d %H:%M:%S") + " -- " + text + "\n") and logFile.close()
 
 def help(command=None):
 	global users
@@ -143,15 +146,13 @@ def report(userFrom, message):
 
 	# temporary while I determine what magic to use above
 	server.privmsg(users['owner'], userFrom+" has something to say: "+message)
-	logFile = open('MPU.log', 'a')
-	return logFile.write(strftime("%Y-%m-%d %H:%M:%S")+" -- "+userFrom+" had something to say: "+message+"\n") and logFile.close()
+	return log(userFrom + " had something to say: " + message)
 
 def kill(userFrom):
 	global users
 
 	if userFrom == users['owner']:
-		logFile = open('MPU.log', 'a')
-		logFile.write(strftime("%Y-%m-%d %H:%M:%S")+" -- "+"Got killed!\n")
+		log("Got killed!")
 		server.disconnect()
 		sys.exit()
 	else:
@@ -836,39 +837,39 @@ irc.add_global_handler('welcome', handleWelcome)
 irc.add_global_handler('umode',   handleMode)
 irc.add_global_handler('ctcp',    handleCTCP)
 
+# dictionary to group information about files we need
+files = {}
+irclib.DEBUG = dirty_secrets.debug
+files['userData'] = 'userData.pickle'
+files['jeeves'] = 'jeeves.pickle'
+files['users'] = 'users.pickle'
+
+# load the pickled files
+for key, file in files.items():
+	try:
+		pickleFile = open(file, 'r')
+		vars()[key] = pickle.load(pickleFile)
+		pickleFile.close()
+	except:
+		vars()[key] = {}
+
+# add some defaults for users
+users['owner'] = dirty_secrets.owner
+if not 'cabal' in users.keys():
+	users['cabal'] = []
+
 # Jump into an infinite loop
 while True:
 	try:
-		# dictionary to group information about files we need
-		files = {}
-		irclib.DEBUG = dirty_secrets.debug
-		files['userData'] = 'userData.pickle'
-		files['jeeves'] = 'jeeves.pickle'
-		files['users'] = 'users.pickle'
-
-		# load the pickled files
-		for key, file in files.items():
-			try:
-				pickleFile = open(file, 'r')
-				vars()[key] = pickle.load(pickleFile)
-				pickleFile.close()
-			except:
-				vars()[key] = {}
-
-		# add some defaults for users
-		users['owner'] = dirty_secrets.owner
-		if not 'cabal' in users.keys():
-			users['cabal'] = []
-
 		# Create a server object, connect and join the channel
 		server = irc.server()
 		server.connect(network, port, nick, password=password, ircname=name, ssl=dirty_secrets.ssl)
 
-		try:
-			while server.is_connected():
-				irc.process_once(timeout=15.0)
-		except KeyboardInterrupt:
-			print "\nCaught ^C, exiting..."
-			sys.exit()
-	except irclib.ServerNotConnectedError:
+		irc.process_forever(timeout=15.0)
+	except KeyboardInterrupt:
+		print "\nCaught ^C, exiting..."
+		sys.exit()
+	except Exception as e:
+		log(e)
+		irc.disconnect_all()
 		sleep(5)
