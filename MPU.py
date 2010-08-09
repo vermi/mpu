@@ -593,7 +593,11 @@ def aid(userFrom, command):
 		aid = command
 	else:
 		return
-	a_file = "anidb/%s.xml.gz" % aid
+	if isdir('anidb'):
+                a_file = "anidb/%s.xml.gz" % aid
+        else:
+                mkdir('anidb')
+                a_file = "anidb/%s.xml.gz" % aid
 	try:
 		atime = datetime.fromtimestamp(os.stat(a_file)[stat.ST_MTIME])
 		d = datetime.now() - atime
