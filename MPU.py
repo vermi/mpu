@@ -211,14 +211,14 @@ def infoset(userFrom, command):
 
 	split = command.split()
 	try:
-        	info = split[0]
-        except:
+		info = split[0]
+	except:
 		help('infoset')
 	try:
 		data = ' '.join(split[1:])
 	except:
 		data = ''
-	
+
 	try:
 		userData[userFrom][info] = data
 	except:
@@ -676,7 +676,7 @@ handleFlags = {
 	'calc':      lambda userFrom, command: calc(userFrom, command),
 	'anidb':     lambda userFrom, command: anidb(userFrom, command),
 	'aid':       lambda userFrom, command: aid(userFrom, command),
-        'adbu':      lambda userFrom, command: update_anidb(),
+	'adbu':      lambda userFrom, command: update_anidb(),
 }
 
 # Treat PMs like public flags, except output is sent back in a PM to the user
