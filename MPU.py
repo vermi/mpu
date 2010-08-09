@@ -7,6 +7,7 @@ licensed under the WTF license
 
 import sys
 from time import strftime, sleep
+import pdb
 import cPickle as pickle
 import commands
 import re
@@ -210,7 +211,10 @@ def infoset(userFrom, command):
 	global files
 
 	split = command.split()
-	info = split[0]
+	try:
+        	info = split[0]
+        except:
+		help('infoset')
 	try:
 		data = ' '.join(split[1:])
 	except:
@@ -656,8 +660,8 @@ handleFlags = {
 	'kill':      lambda userFrom, command: kill(userFrom),
 	'gag':       lambda userFrom, command: gag(),
 	'ungag':     lambda userFrom, command: ungag(),
-	'info':      lambda userFrom, command: info(command),
-	'infoset':   lambda userFrom, command: infoset(userFrom, command),
+#	'info':      lambda userFrom, command: info(command),
+#	'infoset':   lambda userFrom, command: infoset(userFrom, command),
 	'changelog': lambda userFrom, command: changelog(command),
 	'whatis':    lambda userFrom, command: whatis(userFrom, command),
 	'usermod':   lambda userFrom, command: usermod(userFrom, command),
@@ -673,6 +677,7 @@ handleFlags = {
 	'calc':      lambda userFrom, command: calc(userFrom, command),
 	'anidb':     lambda userFrom, command: anidb(userFrom, command),
 	'aid':       lambda userFrom, command: aid(userFrom, command),
+        'adbu':      lambda userFrom, command: update_anidb(),
 }
 
 # Treat PMs like public flags, except output is sent back in a PM to the user
