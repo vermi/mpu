@@ -22,7 +22,6 @@ import json
 from htmlentitydefs import name2codepoint as n2cp
 import gzip
 import os
-import os.path
 import stat
 import xml.dom.minidom as minidom
 
