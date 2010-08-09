@@ -7,7 +7,6 @@ licensed under the WTF license
 
 import sys
 from time import strftime, sleep
-import pdb
 import cPickle as pickle
 import commands
 import re
