@@ -22,6 +22,7 @@ import json
 from htmlentitydefs import name2codepoint as n2cp
 import gzip
 import os
+import os.path
 import stat
 import xml.dom.minidom as minidom
 
@@ -593,10 +594,10 @@ def aid(userFrom, command):
 		aid = command
 	else:
 		return
-	if isdir('anidb'):
+	if os.path.isdir('anidb'):
                 a_file = "anidb/%s.xml.gz" % aid
         else:
-                mkdir('anidb')
+                os.mkdir('anidb')
                 a_file = "anidb/%s.xml.gz" % aid
 	try:
 		atime = datetime.fromtimestamp(os.stat(a_file)[stat.ST_MTIME])
