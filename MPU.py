@@ -35,6 +35,7 @@ nick = dirty_secrets.nick
 name = dirty_secrets.name
 trigger = '!'
 
+#ispm = 0
 gagged = False
 gag_points = 0
 gag_time = datetime.utcnow()
@@ -52,7 +53,7 @@ irc = irclib.IRC()
 
 ## Methods
 def say(message):
-	global gag_points, gag_time, gag_lastmessage, gagged
+	global gag_points, gag_time, gag_lastmessage, gagged, ispm
 	gag_points += 5
 	gag_points -= (datetime.utcnow() - gag_time).seconds
 	if gag_points < 0:
@@ -65,6 +66,7 @@ def say(message):
 		gagged = True
 	else:
 		gagged = False
+                ispm = 0
 	gag_time = datetime.utcnow()
 	gag_lastmessage = message
 
@@ -81,7 +83,7 @@ def log(text):
 	logFile = open('MPU.log', 'a')
 	return logFile.write(strftime("%Y-%m-%d %H:%M:%S") + " -- " + text + "\n") and logFile.close()
 
-def help(command=None):
+def help(command):
 	global users
 	global nick
 
@@ -122,6 +124,18 @@ def help(command=None):
 	elif command=='usermod':
 		say("Changes the status of a user, as viewed by "+nick)
 		say("Usage: usermod [list] [user1 [user2 user3...]]")
+        elif command=='anidb':
+                say("Search for series ID on AniDB. Useful for the aid function.")
+                say("Usage: anidb [search string]")
+        elif command=='aid':
+                say("Get details for a specific series ID from AniDB. Used with the anidb function.")
+                say("Usage: aid [id#]")
+        elif command=='tr':
+                say("Translates a given phrase via Google Translate.")
+        elif command=='roman':
+                say("Converts a Japanese phrase to romaji via Google Transliterate.")
+        elif command=='calc':
+                say("A simple calculator from Google. Also does currency and unit conversion.")
 	else:
 		say("Available commands: " + (' '.join(sorted(handleFlags.keys()))))
 		say("Type 'help [command]' to get more info about command.")
@@ -594,7 +608,11 @@ def aid(userFrom, command):
 		aid = command
 	else:
 		return
-	a_file = "anidb/%s.xml.gz" % aid
+	if os.path.isdir('anidb'):
+                a_file = "anidb/%s.xml.gz" % aid
+        else:
+                os.mkdir('anidb')
+                a_file = "anidb/%s.xml.gz" % aid
 	try:
 		atime = datetime.fromtimestamp(os.stat(a_file)[stat.ST_MTIME])
 		d = datetime.now() - atime
@@ -677,7 +695,6 @@ handleFlags = {
 	'calc':      lambda userFrom, command: calc(userFrom, command),
 	'anidb':     lambda userFrom, command: anidb(userFrom, command),
 	'aid':       lambda userFrom, command: aid(userFrom, command),
-	'adbu':      lambda userFrom, command: update_anidb(),
 }
 
 # Treat PMs like public flags, except output is sent back in a PM to the user
@@ -695,12 +712,14 @@ def handlePrivateMessage(connection, event):
 	
 	# make say() send messages back in PMs
 	global channel
+        #global ispm
 	temp = channel
 	channel = userFrom
 	
 	try:
 		handleFlags[flag.lower()](userFrom, ' '.join(command))
 		channel = temp
+        #        ispm = 1
 	except KeyError:
 		handleFlags['help'](userFrom, '')
 		channel = temp
@@ -827,7 +846,7 @@ def handleCTCP(connection, event):
 				glomp = 'an imouto'
 			action('glomps ' + glomp)
 	elif event.arguments()[0] == 'VERSION':
-		server.ctcp_reply(event.source().split('!')[0], 'VERSION MPU (http://github.com/raylu/mpu/)')
+		server.ctcp_reply(event.source().split('!')[0], 'VERSION MPU (http://github.com/vermi/mpu/)')
 	
 	lastaction[event.source().split('!')[0]] = datetime.utcnow()
 
