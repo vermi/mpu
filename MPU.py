@@ -66,7 +66,7 @@ def say(message):
 		gagged = True
 	else:
 		gagged = False
-                ispm = 0
+		ispm = 0
 	gag_time = datetime.utcnow()
 	gag_lastmessage = message
 
@@ -80,8 +80,10 @@ def action(message):
 		sleep(1)
 
 def log(text):
+	text = str(text)
 	logFile = open('MPU.log', 'a')
-	return logFile.write(strftime("%Y-%m-%d %H:%M:%S") + " -- " + text + "\n") and logFile.close()
+	return logFile.write(strftime("%Y-%m-%d %H:%M:%S") + ": " + text + "\n") and logFile.close()
+	print text
 
 def help(command):
 	global users
@@ -124,18 +126,18 @@ def help(command):
 	elif command=='usermod':
 		say("Changes the status of a user, as viewed by "+nick)
 		say("Usage: usermod [list] [user1 [user2 user3...]]")
-        elif command=='anidb':
-                say("Search for series ID on AniDB. Useful for the aid function.")
-                say("Usage: anidb [search string]")
-        elif command=='aid':
-                say("Get details for a specific series ID from AniDB. Used with the anidb function.")
-                say("Usage: aid [id#]")
-        elif command=='tr':
-                say("Translates a given phrase via Google Translate.")
-        elif command=='roman':
-                say("Converts a Japanese phrase to romaji via Google Transliterate.")
-        elif command=='calc':
-                say("A simple calculator from Google. Also does currency and unit conversion.")
+	elif command=='anidb':
+		say("Search for series ID on AniDB. Useful for the aid function.")
+		say("Usage: anidb [search string]")
+	elif command=='aid':
+		say("Get details for a specific series ID from AniDB. Used with the anidb function.")
+		say("Usage: aid [id#]")
+	elif command=='tr':
+		say("Translates a given phrase via Google Translate.")
+	elif command=='roman':
+		say("Converts a Japanese phrase to romaji via Google Transliterate.")
+	elif command=='calc':
+		say("A simple calculator from Google. Also does currency and unit conversion.")
 	else:
 		say("Available commands: " + (' '.join(sorted(handleFlags.keys()))))
 		say("Type 'help [command]' to get more info about command.")
@@ -608,11 +610,9 @@ def aid(userFrom, command):
 		aid = command
 	else:
 		return
-	if os.path.isdir('anidb'):
-                a_file = "anidb/%s.xml.gz" % aid
-        else:
-                os.mkdir('anidb')
-                a_file = "anidb/%s.xml.gz" % aid
+	if not os.path.isdir('anidb'):
+		os.mkdir('anidb')
+	a_file = "anidb/%s.xml.gz" % aid
 	try:
 		atime = datetime.fromtimestamp(os.stat(a_file)[stat.ST_MTIME])
 		d = datetime.now() - atime
@@ -712,14 +712,14 @@ def handlePrivateMessage(connection, event):
 	
 	# make say() send messages back in PMs
 	global channel
-        #global ispm
+	#global ispm
 	temp = channel
 	channel = userFrom
 	
 	try:
 		handleFlags[flag.lower()](userFrom, ' '.join(command))
 		channel = temp
-        #        ispm = 1
+		#ispm = 1
 	except KeyError:
 		handleFlags['help'](userFrom, '')
 		channel = temp
