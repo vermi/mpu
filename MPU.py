@@ -140,8 +140,7 @@ def help(command):
 		say("A simple calculator from Google. Also does currency and unit conversion.")
 	else:
 		say("Available commands: " + (' '.join(sorted(handleFlags.keys()))))
-		say("Type 'help [command]' to get more info about command.")
-		say("I also respond to PMs; just remember you don't need ! in front of the command.")
+		say("Type 'help [command]' to get more info about command. I also respond to PMs; just remember you don't need ! in front of the command.")
 		return True
 
 def source():
@@ -530,8 +529,7 @@ def transliterate(userFrom, command):
 		req.add_header('User-agent', 'Mozilla/5.0')
 		response = urllib2.urlopen(req)
 		tr = response.read().split('"', 6)[5]
-		say(tr.encode('utf-8'))
-		#say(tr['sentences'][0]['translit'].encode('utf-8'))
+		say(tr)
 	except Exception as e:
 		say(userFrom + ': Error while transliterating from Japanese.')
 		print e
