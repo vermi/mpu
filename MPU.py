@@ -138,6 +138,9 @@ def help(command):
 		say("Converts a Japanese phrase to romaji via Google Transliterate.")
 	elif command=='calc':
 		say("A simple calculator from Google. Also does currency and unit conversion.")
+        elif command=='roll':
+                say("Roll any number of dice of any size. Default is 1d6.")
+                say("Example: roll 3d6")
 	else:
 		say("Available commands: " + (' '.join(sorted(handleFlags.keys()))))
 		say("Type 'help [command]' to get more info about command. I also respond to PMs; just remember you don't need ! in front of the command.")
@@ -668,6 +671,25 @@ def get_anidb(aid):
 	except:
 		say("Error while getting aid %s." % aid)
 
+def roll(userFrom, command):
+        dice = 1
+        size = 6
+        
+        split = command.split('d', 1)
+        try:
+                if len(split) == 2:
+                        dice = int(split[0])
+                        size = int(split[1])
+                else:
+                        say("No input...rolling 1d6.")
+
+        except:
+                say("Check your syntax.")
+                return
+        
+        result = [random.randint(1, size) for i in range(dice)]
+        say(userFrom + "> " + ' '.join(str(i) for i in result))
+
 ## Handle Input
 handleFlags = {
 	'help':      lambda userFrom, command: help(command),
@@ -693,6 +715,7 @@ handleFlags = {
 	'calc':      lambda userFrom, command: calc(userFrom, command),
 	'anidb':     lambda userFrom, command: anidb(userFrom, command),
 	'aid':       lambda userFrom, command: aid(userFrom, command),
+        'roll':      lambda userFrom, command: roll(userFrom, command),
 }
 
 # Treat PMs like public flags, except output is sent back in a PM to the user
