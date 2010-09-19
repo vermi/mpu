@@ -138,9 +138,9 @@ def help(command):
 		say("Converts a Japanese phrase to romaji via Google Transliterate.")
 	elif command=='calc':
 		say("A simple calculator from Google. Also does currency and unit conversion.")
-        elif command=='roll':
-                say("Roll any number of dice of any size. Default is 1d6.")
-                say("Example: roll 3d6")
+	elif command=='roll':
+		say("Roll any number of dice of any size. Default is 1d6.")
+		say("Example: roll 3d6")
 	else:
 		say("Available commands: " + (' '.join(sorted(handleFlags.keys()))))
 		say("Type 'help [command]' to get more info about command. I also respond to PMs; just remember you don't need ! in front of the command.")
@@ -243,7 +243,7 @@ def infoset(userFrom, command):
 	except:
 		userData[userFrom] = {}
 		userData[userFrom][info] = data
-	
+
 	# pickle userData
 	pickleFile = open(files['userData'], 'w')
 	pickle.dump(userData, pickleFile)
@@ -722,7 +722,7 @@ handleFlags = {
 	'calc':      lambda userFrom, command: calc(userFrom, command),
 	'anidb':     lambda userFrom, command: anidb(userFrom, command),
 	'aid':       lambda userFrom, command: aid(userFrom, command),
-        'roll':      lambda userFrom, command: roll(userFrom, command),
+	'roll':      lambda userFrom, command: roll(userFrom, command),
 }
 
 # Treat PMs like public flags, except output is sent back in a PM to the user
@@ -737,13 +737,13 @@ def handlePrivateMessage(connection, event):
 	except:
 		flag = even.arguments()[0]
 		command = []
-	
+
 	# make say() send messages back in PMs
 	global channel
 	#global ispm
 	temp = channel
 	channel = userFrom
-	
+
 	try:
 		handleFlags[flag.lower()](userFrom, ' '.join(command))
 		channel = temp
@@ -767,7 +767,7 @@ def handlePublicMessage(connection, event):
 	except:
 		flag = message
 		command = []
-	
+
 	# s/find/replace/
 	if (flag[0:2] == 's/'):
 		splitMessage = message.split('/')
@@ -875,7 +875,7 @@ def handleCTCP(connection, event):
 			action('glomps ' + glomp)
 	elif event.arguments()[0] == 'VERSION':
 		server.ctcp_reply(event.source().split('!')[0], 'VERSION MPU (http://github.com/vermi/mpu/)')
-	
+
 	lastaction[event.source().split('!')[0]] = datetime.utcnow()
 
 ## Final Setup
