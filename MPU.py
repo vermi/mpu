@@ -688,10 +688,14 @@ def roll(userFrom, command):
 		say("Check your syntax.")
 		return
 
-	result = [random.randint(1, size) for i in range(dice)]
-	total = sum(result)
 	say("Rolling %sd%s. Max is 10d20." % (dice, size))
-	say("%s> %s, for a total of: %s" % (userFrom, ' '.join(str(i) for i in result), total))
+	result = [random.randint(1, size) for i in range(dice)]
+
+	if dice == 1:
+		say("%s> %s" % (userFrom, ' '.join(str(i) for i in result))
+	else:
+		total = sum(result)
+		say("%s> %s, for a total of: %s" % (userFrom, ' '.join(str(i) for i in result), total))
 
 ## Handle Input
 handleFlags = {
