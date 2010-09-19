@@ -24,6 +24,7 @@ import gzip
 import os
 import stat
 import xml.dom.minidom as minidom
+import traceback
 
 ## Beginning Setup
 # Connection information
@@ -692,7 +693,7 @@ def roll(userFrom, command):
 	result = [random.randint(1, size) for i in range(dice)]
 
 	if dice == 1:
-		say("%s> %s" % (userFrom, ' '.join(str(i) for i in result))
+		say("%s> %s" % (userFrom, ' '.join(str(i) for i in result)))
 	else:
 		total = sum(result)
 		say("%s> %s, for a total of: %s" % (userFrom, ' '.join(str(i) for i in result), total))
@@ -920,7 +921,7 @@ while True:
 	except KeyboardInterrupt:
 		print "\nCaught ^C, exiting..."
 		sys.exit()
-	except Exception as e:
-		log(e)
+	except Exception:
+		log(traceback.format_exc(10))
 		irc.disconnect_all()
-		sleep(5)
+	sleep(5)
