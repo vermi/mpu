@@ -140,7 +140,7 @@ def help(command):
 	elif command=='calc':
 		say("A simple calculator from Google. Also does currency and unit conversion.")
 	elif command=='roll':
-		say("Roll any number of dice of any size. Default is 1d6.")
+		say("Roll dice; default is 1d6, max is 10d20.")
 		say("Example: roll 3d6")
 	else:
 		say("Available commands: " + (' '.join(sorted(handleFlags.keys()))))
@@ -680,23 +680,26 @@ def roll(userFrom, command):
 	try:
 		if len(split) == 2:
 			dice = int(split[0])
-			if dice > 10:
-				dice = 10
 			size = int(split[1])
-			if size > 20:
-				size = 20
+			if dice > 10 or size > 20:
+				if dice > 10:
+					dice = 10
+				if size > 20:
+					size = 20
+				say(userFrom + ': max is 10d20')
+			if dice < 1:
+				dice = 1
+			if size < 1:
+				size = 1
+
+		results = [random.randint(1, size) for i in range(dice)]
+		result = "%dd%d: " % (dice, size) + ', '.join(str(i) for i in results)
+		if dice == 1:
+			say(result)
+		else:
+			say("%s; total: %d" % (result, sum(results)))
 	except:
-		say("Check your syntax.")
-		return
-
-	say("Rolling %sd%s. Max is 10d20." % (dice, size))
-	result = [random.randint(1, size) for i in range(dice)]
-
-	if dice == 1:
-		say("%s> %s" % (userFrom, ' '.join(str(i) for i in result)))
-	else:
-		total = sum(result)
-		say("%s> %s, for a total of: %s" % (userFrom, ' '.join(str(i) for i in result), total))
+		say('Usage: ' + trigger + 'roll [1d6]')
 
 ## Handle Input
 handleFlags = {
@@ -909,6 +912,8 @@ for key, file in files.items():
 users['owner'] = dirty_secrets.owner
 if not 'cabal' in users.keys():
 	users['cabal'] = []
+
+random.seed()
 
 # Jump into an infinite loop
 while True:
