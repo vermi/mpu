@@ -672,23 +672,26 @@ def get_anidb(aid):
 		say("Error while getting aid %s." % aid)
 
 def roll(userFrom, command):
-        dice = 1
-        size = 6
-        
-        split = command.split('d', 1)
-        try:
-                if len(split) == 2:
-                        dice = int(split[0])
-                        size = int(split[1])
-                else:
-                        say("No input...rolling 1d6.")
+	dice = 1
+	size = 6
 
-        except:
-                say("Check your syntax.")
-                return
-        
-        result = [random.randint(1, size) for i in range(dice)]
-        say(userFrom + "> " + ' '.join(str(i) for i in result))
+	split = command.split('d', 1)
+	try:
+		if len(split) == 2:
+			dice = int(split[0])
+			if dice > 10:
+				dice = 10
+			size = int(split[1])
+			if size > 20:
+				size = 20
+	except:
+		say("Check your syntax.")
+		return
+
+	result = [random.randint(1, size) for i in range(dice)]
+	total = sum(result)
+	say("Rolling %sd%s. Max is 10d20." % (dice, size))
+	say("%s> %s, for a total of: %s" % (userFrom, ' '.join(str(i) for i in result), total))
 
 ## Handle Input
 handleFlags = {
