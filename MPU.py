@@ -774,6 +774,9 @@ def handlePublicMessage(connection, event):
 
 	# s/find/replace/
 	if (flag[0:2] == 's/'):
+		if message.find("\n"):
+			say(userFrom + "> Fuck off. Seriously.")
+			return
 		splitMessage = message.split('/')
 		if (len(splitMessage) >= 3):
 			#if s///username, frUser is username
