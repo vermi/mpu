@@ -70,9 +70,10 @@ def say(message):
 		ispm = 0
 	gag_time = datetime.utcnow()
 	gag_lastmessage = message
+	safe_message = re.sub("\n", '', message)
 
 	if not gagged:
-		server.privmsg(channel, message)
+		server.privmsg(channel, safe_message)
 		sleep(1)
 
 def action(message):
@@ -774,9 +775,6 @@ def handlePublicMessage(connection, event):
 
 	# s/find/replace/
 	if (flag[0:2] == 's/'):
-		if message.find("\n"):
-			say(userFrom + "> Fuck off. Seriously.")
-			return
 		splitMessage = message.split('/')
 		if (len(splitMessage) >= 3):
 			#if s///username, frUser is username
