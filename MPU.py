@@ -70,7 +70,7 @@ def say(message):
 		ispm = 0
 	gag_time = datetime.utcnow()
 	gag_lastmessage = message
-	safe_message = re.sub("\n", '', message)
+	safe_message = re.sub("[\n\r\t\a\f\v]", '', message)
 
 	if not gagged:
 		server.privmsg(channel, safe_message)
