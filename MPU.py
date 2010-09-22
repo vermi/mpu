@@ -46,8 +46,8 @@ lastmessage = { }
 lastaction = { }
 
 yt_service = gdata.youtube.service.YouTubeService()
-yt_service.developer_key = 'AI39si7bsw0DiAFUUUeG-idPa--w4I2w3SA-IAVMXIkfY7ml0Aw6fP6fN-u248cLyjuWZkFVbxoqV5MdyjA_th4dUD4Y8vvo5A'
-google_key = 'ABQIAAAA6-N_jl4ETgtMf2M52JJ_WRQjQjNunkAJHIhTdFoxe8Di7fkkYhRRcys7ZxNbH3MIy_MKKcEO4-9_Ag'
+yt_service.developer_key = dirty_secrets.ytkey
+google_key = dirty_secrets.google_key
 
 # Create an IRC object
 irc = irclib.IRC()

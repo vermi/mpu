@@ -8,3 +8,6 @@ channel = '#bakabt'
 
 debug = False
 owner = ''
+
+ytkey = ''
+google_key = ''
