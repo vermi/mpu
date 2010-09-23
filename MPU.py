@@ -87,69 +87,69 @@ def log(text):
 	return logFile.write(strftime("%Y-%m-%d %H:%M:%S") + ": " + text + "\n") and logFile.close()
 	print text
 
-def help(command):
+def help(userFrom, command):
 	global users
 	global nick
 
 	if command=='help':
-		say("If called by itself, will list all available commands. Followed by another command, will give more information on that command.")
+		server.privmsg(userFrom, "If called by itself, will list all available commands. Followed by another command, will give more information on that command.")
 		return True
 	elif command=='source':
-		say("Gives the address of the Git repository of MPU's code.")
+		server.privmsg(userFrom, "Gives the address of the Git repository of MPU's code.")
 		return True
 	elif command=='report':
-		say("Will send whatever follows to "+users['owner']+" in a PM, or log it if he's offline.")
+		server.privmsg(userFrom, "Will send whatever follows to "+users['owner']+" in a PM, or log it if he's offline.")
 		return True
 	elif command=='kill':
-		say("Disconnects from "+network+".")
+		server.privmsg(userFrom, "Disconnects from "+network+".")
 		return True
 	elif command=='gag':
-		say("Prevents the bot from speaking until ungagged.")
+		server.privmsg(userFrom, "Prevents the bot from speaking until ungagged.")
 		return True
 	elif command=='ungag':
-		say("Allows the bot to speak again after being gagged.")
+		server.privmsg(userFrom, "Allows the bot to speak again after being gagged.")
 		return True
 	elif command=='info':
-		say("Gets information on a user.")
-		say("Usage: 'info [username]' to list infos, 'info [username] [info1, info2...]' to get infos.")
+		server.privmsg(userFrom, "Gets information on a user.")
+		server.privmsg(userFrom, "Usage: 'info [username]' to list infos, 'info [username] [info1, info2...]' to get infos.")
 		return True
 	elif command=='infoset':
-		say("Sets information about you.")
-		say("Usage: infoset [info] [details]")
+		server.privmsg(userFrom, "Sets information about you.")
+		server.privmsg(userFrom, "Usage: infoset [info] [details]")
 		return True
 	elif command=='changelog':
-		say("Tells what's been changed recently.  If given an argument, get all changes since then.")
-		say('Example: changelog 2weeks, changelog "12 march"')
+		server.privmsg(userFrom, "Tells what's been changed recently.  If given an argument, get all changes since then.")
+		server.privmsg(userFrom, 'Example: changelog 2weeks, changelog "12 march"')
 		return True
 	elif command=='whatis':
-		say("Let's you know what everyone's talking about.  Best used via pm.")
-		say("Example: whatis foo, whatis set foo a common metasyntatic variable")
+		server.privmsg(userFrom, "Let's you know what everyone's talking about.  Best used via pm.")
+		server.privmsg(userFrom, "Example: whatis foo, whatis set foo a common metasyntatic variable")
 		return True
 	elif command=='usermod':
-		say("Changes the status of a user, as viewed by "+nick)
-		say("Usage: usermod [list] [user1 [user2 user3...]]")
+		server.privmsg(userFrom, "Changes the status of a user, as viewed by "+nick)
+		server.privmsg(userFrom, "Usage: usermod [list] [user1 [user2 user3...]]")
 	elif command=='anidb':
-		say("Search for series ID on AniDB. Useful for the aid function.")
-		say("Usage: anidb [search string]")
+		server.privmsg(userFrom, "Search for series ID on AniDB. Useful for the aid function.")
+		server.privmsg(userFrom, "Usage: anidb [search string]")
 	elif command=='aid':
-		say("Get details for a specific series ID from AniDB. Used with the anidb function.")
-		say("Usage: aid [id#]")
+		server.privmsg(userFrom, "Get details for a specific series ID from AniDB. Used with the anidb function.")
+		server.privmsg(userFrom, "Usage: aid [id#]")
 	elif command=='tr':
-		say("Translates a given phrase via Google Translate.")
+		server.privmsg(userFrom, "Translates a given phrase via Google Translate.")
 	elif command=='roman':
-		say("Converts a Japanese phrase to romaji via Google Transliterate.")
+		server.privmsg(userFrom, "Converts a Japanese phrase to romaji via Google Transliterate.")
 	elif command=='calc':
-		say("A simple calculator from Google. Also does currency and unit conversion.")
+		server.privmsg(userFrom, "A simple calculator from Google. Also does currency and unit conversion.")
 	elif command=='roll':
-		say("Roll dice; default is 1d6, max is 10d20.")
-		say("Example: roll 3d6")
+		server.privmsg(userFrom, "Roll dice; default is 1d6, max is 10d20.")
+		server.privmsg(userFrom, "Example: roll 3d6")
 	else:
-		say("Available commands: " + (' '.join(sorted(handleFlags.keys()))))
-		say("Type 'help [command]' to get more info about command. I also respond to PMs; just remember you don't need ! in front of the command.")
+		server.privmsg(userFrom, "Available commands: " + (' '.join(sorted(handleFlags.keys()))))
+		server.privmsg(userFrom, "Type 'help [command]' to get more info about command. I also respond to PMs; just remember you don't need ! in front of the command.")
 		return True
 
 def source():
-	return say("You can view my source at http://github.com/raylu/mpu/ or the original at http://github.com/xiongchiamiov/mpu/")
+	return server.privmsg(userFrom, "You can view my most up-to-date source at http://github.com/vermi/mpu")
 
 def report(userFrom, message):
 	global users
@@ -704,7 +704,7 @@ def roll(userFrom, command):
 
 ## Handle Input
 handleFlags = {
-	'help':      lambda userFrom, command: help(command),
+	'help':      lambda userFrom, command: help(userFrom, command),
 	'source':    lambda userFrom, command: source(),
 	'report':    lambda userFrom, command: report(userFrom, command),
 	'kill':      lambda userFrom, command: kill(userFrom),
