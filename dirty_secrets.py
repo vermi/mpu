@@ -11,3 +11,5 @@ owner = ''
 
 ytkey = ''
 google_key = ''
+
+kill_password=''
