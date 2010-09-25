@@ -35,6 +35,7 @@ channel = dirty_secrets.channel
 nick = dirty_secrets.nick
 name = dirty_secrets.name
 trigger = '!'
+killpass = dirty_secrets.kill_password
 
 #ispm = 0
 gagged = False
@@ -168,10 +169,10 @@ def report(userFrom, message):
 	server.privmsg(users['owner'], userFrom+" has something to say: "+message)
 	return log(userFrom + " had something to say: " + message)
 
-def kill(userFrom):
+def kill(userFrom, command):
 	global users
 
-	if userFrom == users['owner']:
+	if userFrom == users['owner'] and command == killpass:
 		log("Got killed!")
 		server.disconnect()
 		sys.exit()
@@ -707,7 +708,7 @@ handleFlags = {
 	'help':      lambda userFrom, command: help(userFrom, command),
 	'source':    lambda userFrom, command: source(),
 	'report':    lambda userFrom, command: report(userFrom, command),
-	'kill':      lambda userFrom, command: kill(userFrom),
+	'kill':      lambda userFrom, command: kill(userFrom, command),
 	'gag':       lambda userFrom, command: gag(),
 	'ungag':     lambda userFrom, command: ungag(),
 #	'info':      lambda userFrom, command: info(command),
