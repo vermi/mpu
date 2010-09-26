@@ -150,7 +150,8 @@ def help(userFrom, command):
 		return True
 
 def source():
-	return server.privmsg(userFrom, "You can view my most up-to-date source at http://github.com/vermi/mpu")
+	server.privmsg(userFrom, "You can view my most up-to-date source at http://github.com/vermi/mpu")
+	return True
 
 def report(userFrom, message):
 	global users
