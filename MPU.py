@@ -144,6 +144,8 @@ def help(userFrom, command):
 	elif command=='roll':
 		server.privmsg(userFrom, "Roll dice; default is 1d6, max is 10d20.")
 		server.privmsg(userFrom, "Example: roll 3d6")
+	elif command=='futa':
+		server.privmsg(userFrom, "Generates a link to a random futanari image. This is definitely NSFW.")
 	else:
 		server.privmsg(userFrom, "Available commands: " + (' '.join(sorted(handleFlags.keys()))))
 		server.privmsg(userFrom, "Type 'help [command]' to get more info about command. I also respond to PMs; just remember you don't need ! in front of the command.")
@@ -704,8 +706,23 @@ def roll(userFrom, command):
 	except:
 		say('Usage: ' + trigger + 'roll [1d6]')
 
+def futa(userFrom):
+	global owner
+
+	url = "http://www.futanarisplash.com/stumble"
+
+	try:
+		futacon = urllib2.urlopen(url)
+		result = futacon.geturl()
+	except:
+		server.privmsg(userFrom, "Something happened. Tell " + owner)
+		return
+
+	say("[NSFW] " + result)
+
 ## Handle Input
 handleFlags = {
+	'futa':	     lambda userFrom, command: futa(userFrom),
 	'help':      lambda userFrom, command: help(userFrom, command),
 	'source':    lambda userFrom, command: source(userFrom),
 	'report':    lambda userFrom, command: report(userFrom, command),
