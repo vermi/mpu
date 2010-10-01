@@ -762,6 +762,8 @@ def handlePrivateMessage(connection, event):
 
 # Take a look at public messages and see if we need to do anything with them
 def handlePublicMessage(connection, event):
+	global nick
+
 	# get the user the message came from
 	userFrom = event.source().split('!')[0]
 
@@ -786,6 +788,9 @@ def handlePublicMessage(connection, event):
 				frUser = splitMessage[3].strip()
 			if frUser == '':
 				frUser = userFrom
+			if frUser == nick:
+				say(userFrom + ": I can't regex myself, twat.")
+				return
 			try:
 				for s in lastmessage[frUser]:
 					new_string, n = re.subn(splitMessage[1], splitMessage[2], s)
