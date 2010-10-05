@@ -557,16 +557,12 @@ def calc(userFrom, command):
 				say(userFrom + ': Error while calculating.')
 			else:
 				output = "%s = %s" % (match.group(1), match.group(2))
-				output = re.subn(r'\\x[0-9a-f][0-9a-f]', sub_unicode, output)[0]
+				output = output.decode('unicode_escape')
 				output = re.subn('<sup>(.*)</sup>', r'^(\1)', output)[0]
 				output = decode_htmlentities(output)
 				say(output.encode('utf-8'))
 		except:
 			say(userFrom + ': Error while calculating.')
-
-def sub_unicode(match):
-	cp = int(match.group()[2:], 16)
-	return unichr(cp)
 
 def anidb(userFrom, command):
 	try:
